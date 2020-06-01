@@ -29,6 +29,10 @@ TODO
 
 The data provided for the development of this model is highly protected; access to this data is permissable only by the signing of our Nondisclosure Agreement and under no condition can be distributed outside of Omic, Inc.
 
+Software developed on top of this data, however, are openly shareable, so long as they do not immediately pose a risk of the above data policy.
+
+*tl;dr don't share data and be mindful with sharing how you interface with the data.*
+
 ## Model
 
 TODO
