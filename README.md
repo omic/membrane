@@ -19,7 +19,7 @@ TODO
 
 ## Data
 
-TODO
+There are a plethora of voice identification and transcription datasets publicly available, including FSDD, VoxCeleb, CommonVoice, LibreSpeech, etc.  These existing datasets will require transfer learning and need to (optimistically) go through various real-world transformations to match production environments, which primarily include non-linear speech cadence/stuttering/filler words and static/dynamic environment background noise.  In total, the datasets accumulate to over 2TB.
 
 ### Structure
 
@@ -35,7 +35,11 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Model
 
-TODO
+We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
+
+As an example, we could provide several training phrases for the user to speak in our application through the laptop microphone. We would record these phrases, then provide a new login phrase for them to read and log in. The person’s voice would need to be isolated from background noise. 
+
+The model would score the new login phrase - identifying the person of closest match and false positive/negative (precision/recall) data for understanding false positive and negative rates. The goal would be for these to score at least as well as common voice recognition models that currently exist.
 
 ### Tier 1
 
@@ -48,3 +52,7 @@ TODO
 ### Tier 3
 
 TODO
+
+### Tier 4 (Boss Level)
+
+Collect and package all references and results.  Publish a paper in a top journal.  Save the princess.
