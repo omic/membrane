@@ -4,8 +4,8 @@ modelv2/wav_test_subset/
 modelv2/checkpoints/
 
 # Transfer Learning Weights
-**/*.mat
-**/*.h5
+**.mat
+**.h5
 
 # Packages #
 ############
