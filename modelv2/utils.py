@@ -1,4 +1,6 @@
 SERVER = False
+import os
+
 
 # Files and Directories
 ROOT_DIR = ""
@@ -14,6 +16,7 @@ IDENTIFY_RECORDING_FNAME = "identify_user_recording.wav"
 # MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
+VERIFICATION_FOLDER = "tested_users"
 
 # Data_Part
 TOTAL_USERS = 100
@@ -26,7 +29,7 @@ TRAINING_USERS = 100
 SIMILAR_PAIRS = 20#20
 DISSIMILAR_PAIRS = SIMILAR_PAIRS * 5
 DISTANCE_METRIC = "cosine"
-THRESHOLD = 0.8
+THRESHOLD = 0.95 # 0.8
 
 LEARNING_RATE = 5e-4
 N_EPOCHS = 30
@@ -34,7 +37,7 @@ BATCH_SIZE = 32
 
 STFT_FOLDER = 'stft' + str(int(MIN_CLIP_DURATION))
 TEST_STFT_FOLDER = 'test_stft' + str(int(MIN_CLIP_DURATION))
-RECORDING_STFT_FOLDER = RECORDING_PATH + '/'+'stft'
+RECORDING_STFT_FOLDER = os.path.join(RECORDING_PATH,'stft')#RECORDING_PATH + '/'+'stft'
 
 PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 # PAIRS_FILE = 'pairs.csv'
@@ -44,7 +47,7 @@ assert SIMILAR_PAIRS <= CLIPS_PER_USER * (CLIPS_PER_USER - 1)
 
 
 from tqdm import tqdm
-import os
+
 import sys
 import time
 try:
@@ -95,6 +98,8 @@ if not os.path.exists(CHECKPOINTS_FOLDER):
 if not os.path.exists(ENROLLMENT_FOLDER):
     os.mkdir(ENROLLMENT_FOLDER)
 
+if not os.path.exists(VERIFICATION_FOLDER):
+    os.mkdir(VERIFICATION_FOLDER)
 
 plt.style.use('seaborn-darkgrid')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -204,72 +209,74 @@ def save_checkpoint(state, loss):
     torch.save(state, get_rel_path(os.path.join(CHECKPOINTS_FOLDER, fname)))  # save checkpoint
     print("$$$ Saved a new checkpoint\n")
 
-###moved to recoder.py
-# def record(fpath):
-#     CHUNK = 1024
-#     FORMAT = pyaudio.paInt16
-#     CHANNELS = 2
-#     RATE = 44100
-#     EXTRA_SECONDS = 2.0
-#     RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
 
-#     LONG_STRING = "She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!"
+def record(fpath):
+    CHUNK = 2048 #1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
+    RATE = 16000 # 44100
+    EXTRA_SECONDS = 2.0
+    RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
 
-#     print("Recording {} seconds".format(RECORD_SECONDS - EXTRA_SECONDS))
-#     print("\n Speak the following sentence for recording: \n {} \n".format(LONG_STRING))
+    LONG_STRING = "She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!"
 
-#     p = pyaudio.PyAudio()
+    print("Recording {} seconds".format(RECORD_SECONDS - EXTRA_SECONDS))
+    print("\n Speak the following sentence for recording: \n {} \n".format(LONG_STRING))
 
-#     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
-#                     input=True, frames_per_buffer=CHUNK)
+    p = pyaudio.PyAudio()
 
-#     time.sleep(1)
+    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
+                    input=True, frames_per_buffer=CHUNK)
 
-#     print("Recording starts in 3 seconds...")
-#     time.sleep(2)   # start 1 second earlier
-#     print("Speak now!")
-#     frames = []
+    time.sleep(1)
 
-#     for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-#         data = stream.read(CHUNK)
-#         frames.append(data)
+    print("Recording starts in 3 seconds...")
+    time.sleep(2)   # start 1 second earlier
+    print("Speak now!")
+    frames = []
 
-#     stream.stop_stream()
-#     stream.close()
-#     p.terminate()
+    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+        data = stream.read(CHUNK, exception_on_overflow = False)
+        frames.append(data)
 
-#     print("Recording complete")
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
-#     wf = wave.open(fpath, 'wb')
-#     wf.setnchannels(CHANNELS)
-#     wf.setsampwidth(p.get_sample_size(FORMAT))
-#     wf.setframerate(RATE)
-#     wf.writeframes(b''.join(frames))
-#     wf.close()
+    print("Recording complete")
+    
+    #while os.path.exists(fpath)
+    wf = wave.open(fpath, 'wb') 
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(p.get_sample_size(FORMAT))
+    wf.setframerate(RATE)
+    wf.writeframes(b''.join(frames))
+    wf.close()
 
 
-###moved to recoder.py
-# def split_recording(recording=ENROLL_RECORDING_FNAME):
-#     wav, sr = librosa.load(recording)
-#     RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
-#     all_x = []
-#     for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
-#         x, sr = librosa.load(recording, sr=16000, offset=offset,
-#                              duration=MIN_CLIP_DURATION)
 
-#         all_x.append(x)
 
-#     return get_stft(all_x)
+def split_recording(recording=ENROLL_RECORDING_FNAME):
+    wav, sr = librosa.load(recording)
+    RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
+    all_x = []
+    for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
+        x, sr = librosa.load(recording, sr=16000, offset=offset,
+                             duration=MIN_CLIP_DURATION)
 
-# def save_stft(all_stft, all_user_clips):
-#     all_stft_paths = []
-#     for i, user_path in tqdm(enumerate(all_user_clips)):
-#         user_stft = all_stft[i]
-#         stft_fname = '_'.join(user_path.split('/')[-3:])[:-4] + '.npy'
-#         stft_path = get_rel_path(os.path.join(STFT_FOLDER, stft_fname))
-#         np.save(stft_path, user_stft)
-#         all_stft_paths.append(stft_path)
-#     return all_stft_paths
+        all_x.append(x)
+
+    return get_stft(all_x)
+
+def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
+    all_stft_paths = []
+    for i in tqdm(range(len(all_stft))):
+        user_stft = all_stft[i]
+        stft_fname = '_'.join(recording.split('/')[-3:])[:-4] + '.npy'
+        stft_path = get_rel_path(os.path.join(RECORDING_STFT_FOLDER, stft_fname))
+        np.save(stft_path, user_stft)
+        all_stft_paths.append(stft_path)
+    return all_stft_paths
 
 
 class AudioRec(object):
