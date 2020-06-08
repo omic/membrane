@@ -1,0 +1,21 @@
+# Don't track content of these folders
+modelv2/wav_train_subset/
+modelv2/wav_test_subset/
+modelv2/checkpoints/
+
+# Transfer Learning Weights
+**/*.mat
+**/*.h5
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
