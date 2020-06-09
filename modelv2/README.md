@@ -15,6 +15,37 @@ Move some subset of data of test users into /wav_test_subset
 * Install python3 and the required packages
 * To run:
 
+
+### VBBA.py (Voice-Based Biometric Authentication)
+```
+python3 VBBA.py (optional argument)
+```
+```
+(optional arguments):
+  -h, --help            show this help message and exit
+  -l, --list-current-users
+                        Show current enrolled users
+  -e, --enroll          Enroll a new user
+  -v, --verify          Verify a user from the ones in the database
+  -i, --identify        Identify a user
+  -d, --delete          Delete user from database
+  -c, --clear           Clear Database
+  -u USERNAME, --username USERNAME
+```
+For example:
+```
+python3 VBBA.py -e -u John_Doe # Recording starts shortly. Enroll for John Doe
+```
+```
+python3 VBBA.py -v -u John_Doe # Recording starts shortly. Verify it with John_Doe's enrolled voice.
+```
+```
+python3 VBBA.py -i # Recording starts shortly. Detect and identify the voice among enrolled users.
+```
+```
+python3 VBBA.py -l # Display enrolled users.
+```
+
 ### Train
 ```
 python3 make_clips_list.py # makes a clips_list.txt for training

@@ -55,8 +55,8 @@ def show_current_users():
     return list(speaker_models.keys())
 
 
-def get_emb(fpath):
-    record(fpath)
+def get_emb(fpath, enroll = False):
+    record(fpath, enroll)
     user_stfts = split_recording(fpath)
     user_stfts = np.expand_dims(user_stfts, axis=1)
     emb = fwd_pass(user_stfts)
@@ -69,13 +69,19 @@ def emb_dist(emb1, emb2):
 
 def enroll_new_user(username):
     fpath = os.path.join(ENROLLMENT_FOLDER, username + '_' + ENROLL_RECORDING_FNAME)
-    emb = get_emb(fpath)
+    emb = get_emb(fpath, enroll = True)
     store_user_embedding(username, emb)
 
 
 def verify_user(username):
     fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
     #username + '_' + VERIFY_RECORDING_FNAME
+    while os.path.exists(fpath):
+        fname = fpath.split('.wav')[0]
+        if fname[-1].isalpha():
+            fpath = fname+'2'+'.wav'
+        else:
+            fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
     emb = get_emb(fpath)
     speaker_models = load_speaker_models()
     dist = emb_dist(emb, speaker_models[username])
@@ -83,8 +89,22 @@ def verify_user(username):
     return dist > THRESHOLD, fpath
 
 
+# def fname_numbering(fpath):
+#     while os.path.exists(fpath):
+#         fname = fpath.split('.wav')[0]
+#         if fname[-1].isalpha():
+#             fpath = fname+'2'+'.wav'
+#         else:
+#             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
+
 def identify_user():
     fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
+    while os.path.exists(fpath):
+        fname = fpath.split('.wav')[0]
+        if fname[-1].isalpha():
+            fpath = fname+'2'+'.wav'
+        else:
+            fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
     emb = get_emb(fpath)
     speaker_models = load_speaker_models()
     dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
@@ -161,7 +181,7 @@ def main():
         var = input("Save recording: (y/n)?")
         if var == 'y' or var == 'yes':
             print(f'{fpath} saved')
-        elif var == 'n' or var == 'no':
+        else:#if var == 'n' or var == 'no':
             os.remove(fpath)
             print(f'{fpath} removed')
         
@@ -169,10 +189,26 @@ def main():
     elif args.identify:
         identified_user, fpath = identify_user()
         print("Identified User {}".format(identified_user))
-        var = input("Save recording? (y/n):")
+#         correct_user = input(f"Are you {identified_user}? (y/n): ")
+        
+        var = input("Save recording? (y/n): ")
         if var == 'y' or var == 'yes':
+#             if correct_user =='y' or correct_user == 'yes':
+#                 path_split = fpath.rsplit('/',1)
+#                 dir_path = path_split[0]
+#                 fname = path_split[-1]
+#                 new_fpath = os.path.join(dir_path,identified_user+'_'+fname)
+#                 os.rename(fpath, new_fpath)
+#                 print(f'{new_fpath} saved')
+#             else:
+#                 path_split = fpath.rsplit('/',1)
+#                 dir_path = path_split[0]
+#                 fname = path_split[-1]
+#                 new_fpath = os.path.join(dir_path,'unknown'+'_'+fname)
+#                 os.rename(fpath, new_fpath)
+#                 print(f'{new_fpath} saved')
             print(f'{fpath} saved')
-        elif var == 'n' or var == 'no':
+        else: #if var == 'n' or var == 'no':
             os.remove(fpath)
             print(f'{fpath} removed')
 

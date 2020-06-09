@@ -210,7 +210,7 @@ def save_checkpoint(state, loss):
     print("$$$ Saved a new checkpoint\n")
 
 
-def record(fpath):
+def record(fpath, enroll = False):
     CHUNK = 2048 #1024
     FORMAT = pyaudio.paInt16
     CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
@@ -218,17 +218,24 @@ def record(fpath):
     EXTRA_SECONDS = 2.0
     RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
 
-    LONG_STRING = "She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!"
+    LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
 
     print("Recording {} seconds".format(RECORD_SECONDS - EXTRA_SECONDS))
-    print("\n Speak the following sentence for recording: \n {} \n".format(LONG_STRING))
+    print("\n Speak the following sentence for recording: \n {}\n".format(LONG_STRING))
 
+    print(' or\n')
+    print(' You can speak your own secret phrases.')
+    if enroll:
+        print(' If you do so, please let us know your secret phrases:)\n\n')
+    else: print('\n')
+    
     p = pyaudio.PyAudio()
 
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
 
-    time.sleep(1)
+    if enroll:time.sleep(5)
+    else: time.sleep(3)
 
     print("Recording starts in 3 seconds...")
     time.sleep(2)   # start 1 second earlier
@@ -245,7 +252,7 @@ def record(fpath):
 
     print("Recording complete")
     
-    #while os.path.exists(fpath)
+
     wf = wave.open(fpath, 'wb') 
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
