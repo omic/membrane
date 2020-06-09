@@ -3,11 +3,18 @@ modelv2/wav_train_subset/
 modelv2/wav_test_subset/
 modelv2/checkpoints/
 modelv2/local_work/
+modelv1/
+
+# locally working files
+realtime.py
+modelv2/audioset/
 
 # Transfer Learning Weights
 **.mat
 **.h5
 **.wav
+**.ckpt
+**.npz
 
 # Packages #
 ############

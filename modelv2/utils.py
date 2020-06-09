@@ -278,22 +278,22 @@ def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
         all_stft_paths.append(stft_path)
     return all_stft_paths
 
+# moved to realtime.py
+# class AudioRec(object):
+#     def __init__(self):
+#         self.r = sr.Recognizer()
+#         self.src = sr.Microphone()
+#         with self.src as source:
+#             print("Calibrating microphone...")
+#             self.r.adjust_for_ambient_noise(source, duration=2)
 
-class AudioRec(object):
-    def __init__(self):
-        self.r = sr.Recognizer()
-        self.src = sr.Microphone()
-        with self.src as source:
-            print("Calibrating microphone...")
-            self.r.adjust_for_ambient_noise(source, duration=2)
-
-    def listen(self, save_path):
-        time_to_record = NUM_NEW_CLIPS * MIN_CLIP_DURATION + 1.0
-        with self.src as source:
-            print("Recording ...", time_to_record)
-            # record for a maximum of 10s
-            audio = self.r.listen(source, phrase_time_limit=time_to_record)
-        # write audio to a WAV file
-        with open(save_path, "wb") as f:
-            f.write(audio.get_wav_data())
+#     def listen(self, save_path):
+#         time_to_record = NUM_NEW_CLIPS * MIN_CLIP_DURATION + 1.0
+#         with self.src as source:
+#             print("Recording ...", time_to_record)
+#             # record for a maximum of 10s
+#             audio = self.r.listen(source, phrase_time_limit=time_to_record)
+#         # write audio to a WAV file
+#         with open(save_path, "wb") as f:
+#             f.write(audio.get_wav_data())
 
