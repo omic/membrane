@@ -34,24 +34,24 @@ python3 VBBA.py (optional argument)
 ```
 For example:
 ```
-python3 VBBA.py -e -u John_Doe # Recording starts shortly. Enroll for John Doe
+python3 VBBA.py -e -u John_Doe   # Recording starts shortly. Enroll for John Doe
 ```
 ```
-python3 VBBA.py -v -u John_Doe # Recording starts shortly. Verify it with John_Doe's enrolled voice.
+python3 VBBA.py -v -u John_Doe   # Recording starts shortly. Verify it with John_Doe's enrolled voice.
 ```
 ```
-python3 VBBA.py -i # Recording starts shortly. Detect and identify the voice among enrolled users.
+python3 VBBA.py -i   # Recording starts shortly. Detect and identify the voice among enrolled users.
 ```
 ```
-python3 VBBA.py -l # Display enrolled users.
+python3 VBBA.py -l   # Display enrolled users.
 ```
 
 ### Train
 ```
-python3 make_clips_list.py # makes a clips_list.txt for training
+python3 make_clips_list.py   # makes a clips_list.txt for training
 ```
 ```
-python3 data_preprocessing.py # makes np vectors from training audio files
+python3 data_preprocessing.py   # makes np vectors from training audio files
 ```
 ```
 python3 train.py train --test_users [users for test (default:None)] --n_epoches [number of epochs (default:1)]
@@ -63,10 +63,10 @@ python3 train.py train --test_users f0001 m0001 --n_epoches 15
 
 ### Test
 ```
-python3 make_test_clips_list.py # makes a test_clips_list.txt for testing
+python3 make_test_clips_list.py   # makes a test_clips_list.txt for testing
 ```
 ```
-python3 test_data_prepocessing.py  # makes np vectors from testing audio files
+python3 test_data_prepocessing.py   # makes np vectors from testing audio files
 ```
 ```
 python3 test.py test --threshold [threshold for cosine similarity for verification (default:0.95)]
