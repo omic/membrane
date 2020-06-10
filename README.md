@@ -35,6 +35,8 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Model
 
+Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoint_20200604-112741_0.00098080572206527.pth.tar.
+
 We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
 
 As an example, we could provide several training phrases for the user to speak in our application through the laptop microphone. We would record these phrases, then provide a new login phrase for them to read and log in. The person’s voice would need to be isolated from background noise. 
