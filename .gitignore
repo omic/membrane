@@ -5,6 +5,8 @@ modelv2/checkpoints/
 modelv2/local_work/
 modelv2/recordings/
 modelv2/stft*/
+modelv2/__pycache__/
+modelv2/.ipynb_checkpoints/
 modelv1/
 
 # locally working files
