@@ -14,6 +14,7 @@ def fwd_pass(user_stfts):
     model, *_ = load_saved_model(checkpoints[-1]) #MODEL_FNAME
 
     user_stfts = torch.tensor(user_stfts).to(device)
+#     print('user_stfts.shape:', user_stfts.shape)  ##let's check the shapes
     out = model.forward_single(user_stfts)
     out_np = out.detach().cpu().numpy()
 
@@ -55,12 +56,16 @@ def show_current_users():
     return list(speaker_models.keys())
 
 
-def get_emb(fpath, enroll = False):
-    record(fpath, enroll)
-    user_stfts = split_recording(fpath)
+def get_emb( enroll = False):#fpath
+#     record(fpath, enroll)
+    denoised_data = record_and_denoise( enroll)
+#     user_stfts = split_recording(fpath)
+    user_stfts = split_loaded_data(denoised_data, RATE)
     user_stfts = np.expand_dims(user_stfts, axis=1)
+#     print(user_stfts.shape)
     emb = fwd_pass(user_stfts)
-    return emb
+#     print('emb shape:', emb.shape) #Let's check shape
+    return emb, denoised_data  #audio_buffer, bg_buffer 
 
 
 def emb_dist(emb1, emb2):
@@ -69,24 +74,25 @@ def emb_dist(emb1, emb2):
 
 def enroll_new_user(username):
     fpath = os.path.join(ENROLLMENT_FOLDER, username + '_' + ENROLL_RECORDING_FNAME)
-    emb = get_emb(fpath, enroll = True)
+    emb, denoised_data = get_emb( enroll = True)#fpath,
     store_user_embedding(username, emb)
-
+    write_recording(fpath,denoised_data)
 
 def verify_user(username):
-    fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
+#     fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
     #username + '_' + VERIFY_RECORDING_FNAME
-    while os.path.exists(fpath):
-        fname = fpath.split('.wav')[0]
-        if fname[-1].isalpha():
-            fpath = fname+'2'+'.wav'
-        else:
-            fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
-    emb = get_emb(fpath)
+#     while os.path.exists(fpath):
+#         fname = fpath.split('.wav')[0]
+#         if fname[-1].isalpha():
+#             fpath = fname+'2'+'.wav'
+#         else:
+#             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
+    emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
+#     print(emb.shape, speaker_models[username].shape)  ##let's check the shapes
     dist = emb_dist(emb, speaker_models[username])
-    print(dist)
-    return dist > THRESHOLD, fpath
+    print('cosine distance: ',dist)
+    return dist > THRESHOLD , denoised_data   #, fpath
 
 
 # def fname_numbering(fpath):
@@ -98,23 +104,17 @@ def verify_user(username):
 #             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
 
 def identify_user():
-    fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
-    while os.path.exists(fpath):
-        fname = fpath.split('.wav')[0]
-        if fname[-1].isalpha():
-            fpath = fname+'2'+'.wav'
-        else:
-            fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
-    emb = get_emb(fpath)
+#     fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
+    emb,  denoised_data = get_emb(fpath)
     speaker_models = load_speaker_models()
     dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
             for other_user in speaker_models]
-    print(dist)
+    print('cosine distance: ',dist)
     username, min_dist = min(dist, key=lambda x:x[1])
 
     if min_dist > THRESHOLD:
-        return username, fpath
-    return None, fpath
+        return username,   denoised_data
+    return None,  denoised_data
 
 
 def delete_user(username):
@@ -166,51 +166,61 @@ def main():
     elif args.enroll:
         username = args.username
         assert username is not None, "Enter username"
-        assert username not in show_current_users(), "Username already exists in database"
+        if username in show_current_users():
+            print("Username already exists in database.")
+            var = input("Do you want to replace? (y/n):")
+            if var == 'y' or 'yes': pass
+            else: return
         enroll_new_user(username)
 
     elif args.verify:
         username = args.username
         assert username is not None, "Enter username"
         assert username in show_current_users(), "Unrecognized username"
-        verified, fpath = verify_user(username)
+        verified,  denoised_data = verify_user(username)
         if verified:
             print("User verified")
         else:
             print("Unknown user")
         var = input("Save recording: (y/n)?")
         if var == 'y' or var == 'yes':
-            print(f'{fpath} saved')
+            fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
+            fpath = fpath_numbering(fpath)
+            write_recording(fpath,  denoised_data)
+#             write_recording(fpath+'_bg.wav', bg_buffer)
+            print(f'{fpath}.wav saved')
         else:#if var == 'n' or var == 'no':
-            os.remove(fpath)
-            print(f'{fpath} removed')
+#             os.remove(fpath)
+#             print(f'{fpath}.wav removed')
+            print('Recording removed')
         
 
     elif args.identify:
-        identified_user, fpath = identify_user()
+        identified_user,  denoised_data = identify_user()
         print("Identified User {}".format(identified_user))
-#         correct_user = input(f"Are you {identified_user}? (y/n): ")
+        correct_user = input(f"Are you {identified_user}? (y/n): ")
         
         var = input("Save recording? (y/n): ")
         if var == 'y' or var == 'yes':
-#             if correct_user =='y' or correct_user == 'yes':
-#                 path_split = fpath.rsplit('/',1)
+            fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
+            fpath = fpath_numbering(fpath)
+            path_split = fpath.rsplit('/',1)
+            if correct_user =='y' or correct_user == 'yes':
 #                 dir_path = path_split[0]
 #                 fname = path_split[-1]
-#                 new_fpath = os.path.join(dir_path,identified_user+'_'+fname)
+                new_fpath = os.path.join(path_split[0],identified_user+'_'+path_split[-1])
 #                 os.rename(fpath, new_fpath)
-#                 print(f'{new_fpath} saved')
-#             else:
-#                 path_split = fpath.rsplit('/',1)
-#                 dir_path = path_split[0]
-#                 fname = path_split[-1]
-#                 new_fpath = os.path.join(dir_path,'unknown'+'_'+fname)
+            else:
+                new_fpath = os.path.join(path_split[0],'unknown'+'_'+path_split[-1])
 #                 os.rename(fpath, new_fpath)
-#                 print(f'{new_fpath} saved')
-            print(f'{fpath} saved')
+            write_recording(new_fpath,  denoised_data)
+#             write_recording(new_fpath+'_bg.wav', bg_buffer)
+            print(f'{new_fpath}.wav saved')
+
         else: #if var == 'n' or var == 'no':
-            os.remove(fpath)
-            print(f'{fpath} removed')
+#             os.remove(fpath)
+#             print(f'{fpath} removed')
+            print('Recording removed')
 
     elif args.delete:
         username = args.username

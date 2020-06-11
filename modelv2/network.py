@@ -98,12 +98,16 @@ class VggVox(nn.Module):
 
     def forward_single(self, x):
         x = self.conv1(x)
+#         print(x.shape) #let's check the shape
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
         x = self.conv5(x)
+#         print('after conv5:',x.shape) #let's check the shape
         x = self.fc6(x)
+#         print('after fc6:',x.shape) #let's check the shape
         x = self.global_pool(kernel_size=x.size()[2:])(x)
+#         print('after avg pool:',x.shape) #let's check the shape
         x = self.fc7(x)
         out = self.fc8(x)
         out = out.view(-1, out.shape[1])
@@ -201,7 +205,7 @@ def load_saved_model(fname, test=True):
     new_model_dict.load_state_dict(checkpoint['state_dict'])
     if test:
         model = new_model_dict.eval()
-    print("Loading model in test mode", test)
+    print("Loading model in test mode:", test)
     model = model.to(device)
 
     new_optimizer = optim.Adam(params=model.parameters())

@@ -3,6 +3,8 @@ modelv2/wav_train_subset/
 modelv2/wav_test_subset/
 modelv2/checkpoints/
 modelv2/local_work/
+modelv2/recordings/
+modelv2/stft*/
 modelv1/
 
 # locally working files

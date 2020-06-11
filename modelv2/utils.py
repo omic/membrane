@@ -9,10 +9,12 @@ TEST_PATH = 'wav_test_subset'
 CHECKPOINTS_FOLDER = "checkpoints"
 VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
 
+
+#Recording
 RECORDING_PATH = "recordings"
-ENROLL_RECORDING_FNAME = "enroll_user_recording.wav"
-VERIFY_RECORDING_FNAME = "verify_user_recording.wav"
-IDENTIFY_RECORDING_FNAME = "identify_user_recording.wav"
+ENROLL_RECORDING_FNAME = "enroll_user_recording"#.wav
+VERIFY_RECORDING_FNAME = "veri_recording" #"verify_user_recording.wav"
+IDENTIFY_RECORDING_FNAME = "iden_recording" #"identify_user_recording.wav"
 # MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
@@ -21,8 +23,10 @@ VERIFICATION_FOLDER = "tested_users"
 # Data_Part
 TOTAL_USERS = 100
 CLIPS_PER_USER = 15 #15
-MIN_CLIP_DURATION = 3. #5
+MIN_CLIP_DURATION = 2 #5 #2 #3
 NUM_NEW_CLIPS = 5
+
+
 
 # ML_Part
 TRAINING_USERS = 100
@@ -142,18 +146,6 @@ def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION):
     return all_x, all_sr
 
 
-def get_stft(all_x, nperseg=400, noverlap=239, nfft=1023):
-
-    all_stft = []
-    for x in all_x:
-        _, _, Z = scipy.signal.stft(x, window="hamming",
-                                       nperseg=nperseg,
-                                       noverlap=noverlap,
-                                       nfft=nfft)
-        Z = sklearn.preprocessing.normalize(np.abs(Z), axis=1)
-        assert Z.shape[0] == 512
-        all_stft.append(Z)
-    return np.array(all_stft)
 
 
 def load_pretrained_weights():
@@ -182,7 +174,7 @@ def load_pretrained_weights():
     return weights
 
 
-# parameters
+# Neural Network parameters
 conv_kernel1, n_f1, s1, p1 = 7, 96, 2, 1
 pool_kernel1, pool_s1 = 3, 2
 
@@ -211,7 +203,7 @@ def save_checkpoint(state, loss):
 
 
 def record(fpath, enroll = False):
-    CHUNK = 2048 #1024
+    CHUNK = 1024 #2048 #1024
     FORMAT = pyaudio.paInt16
     CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
     RATE = 16000 # 44100
@@ -234,8 +226,8 @@ def record(fpath, enroll = False):
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
 
-    if enroll:time.sleep(5)
-    else: time.sleep(3)
+    if enroll:input('Ready to start? (press enter)')
+    else: time.sleep(1)
 
     print("Recording starts in 3 seconds...")
     time.sleep(2)   # start 1 second earlier
@@ -260,11 +252,25 @@ def record(fpath, enroll = False):
     wf.writeframes(b''.join(frames))
     wf.close()
 
+    
+    
 
+def get_stft(all_x, nperseg=400, noverlap=239, nfft=1023):
+
+    all_stft = []
+    for x in all_x:
+        _, t, Z = scipy.signal.stft(x, window="hamming",
+                                       nperseg=nperseg,
+                                       noverlap=noverlap,
+                                       nfft=nfft)
+        Z = sklearn.preprocessing.normalize(np.abs(Z), axis=1)
+        assert Z.shape[0] == 512
+        all_stft.append(Z)
+    return np.array(all_stft)
 
 
 def split_recording(recording=ENROLL_RECORDING_FNAME):
-    wav, sr = librosa.load(recording)
+#     wav, sr = librosa.load(recording)
     RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
     all_x = []
     for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
@@ -274,6 +280,15 @@ def split_recording(recording=ENROLL_RECORDING_FNAME):
         all_x.append(x)
 
     return get_stft(all_x)
+
+def split_loaded_data(data, sr = 16000):
+    RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
+    all_x = []
+    for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
+        x = data[offset:offset+MIN_CLIP_DURATION*sr]
+        all_x.append(x)
+    return get_stft(all_x)
+
 
 def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
     all_stft_paths = []
@@ -304,3 +319,238 @@ def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
 #         with open(save_path, "wb") as f:
 #             f.write(audio.get_wav_data())
 
+
+
+# denoising functions
+
+def _stft(x, nperseg=400, noverlap=239, nfft=1023):
+    _, _, Z = scipy.signal.stft(x, window="hamming",
+                                   nperseg=nperseg,
+                                   noverlap=noverlap,
+                                   nfft=nfft)
+    assert Z.shape[0] == 512
+    return np.array(Z)  
+
+
+def _istft(x, nperseg=400, noverlap=239, nfft=1023):
+
+    _, Z = scipy.signal.istft(x, window="hamming",
+                                   nperseg=nperseg,
+                                   noverlap=noverlap,
+                                   nfft=nfft)
+    return np.array(Z)  
+
+def _amp_to_db(x):
+    return librosa.core.amplitude_to_db(x, ref=1.0, amin=1e-20, top_db=80.0)
+
+def _db_to_amp(x,):
+    return librosa.core.db_to_amplitude(x, ref=1.0)
+
+
+# inputs: data after librosa.load('....wav', sr=16000)
+def removeNoise(
+    audio_data,
+    noise_data,
+    #nperseg=400, noverlap=239, nfft=1023
+    n_grad_freq=2,
+    n_grad_time=4,
+#     n_fft=2048,
+#     n_fft=1023,
+#     win_length=2048,
+#     hop_length=512,
+    n_std_thresh=1.5,
+    prop_decrease=1.0
+):
+    """Remove noise from audio based upon a clip containing only noise
+
+    Args:
+        audio_data (array): The first parameter.
+        noise_data (array): The second parameter.
+        n_grad_freq (int): how many frequency channels to smooth over with the mask.
+        n_grad_time (int): how many time channels to smooth over with the mask.
+        n_fft (int): number audio of frames between STFT columns.
+        win_length (int): Each frame of audio is windowed by `window()`. The window will be of length `win_length` and then padded with zeros to match `n_fft`..
+        hop_length (int):number audio of frames between STFT columns.
+        n_std_thresh (int): how many standard deviations louder than the mean dB of the noise (at each frequency level) to be considered signal
+        prop_decrease (float): To what extent should you decrease noise (1 = all, 0 = none)
+        visual (bool): Whether to plot the steps of the algorithm
+
+    Returns:
+        array: The recovered signal with noise subtracted
+
+    """
+#     if verbose:
+#         start = time.time()
+    # STFT over noise
+    noise_stft = _stft(noise_data)
+    noise_stft_db = _amp_to_db(np.abs(noise_stft))  # convert to dB
+    # Calculate statistics over noise
+    mean_freq_noise = np.mean(noise_stft_db, axis=1)
+    std_freq_noise = np.std(noise_stft_db, axis=1)
+    noise_thresh = mean_freq_noise + std_freq_noise * n_std_thresh
+#     if verbose:
+#         print("STFT on noise:", td(seconds=time.time() - start))
+#         start = time.time()
+    # STFT over signal
+#     if verbose:
+#         start = time.time()
+    sig_stft = _stft(audio_data)
+    sig_stft_db = _amp_to_db(np.abs(sig_stft))
+#     if verbose:
+#         print("STFT on signal:", td(seconds=time.time() - start))
+#         start = time.time()
+    # Calculate value to mask dB to
+#     mask_gain_dB = np.min(_amp_to_db(np.abs(sig_stft)))
+    mask_gain_dB = np.min(sig_stft_db)
+#     print("Noise threshold, Mask gain dB:\n",noise_thresh, mask_gain_dB)
+    # Create a smoothing filter for the mask in time and frequency
+    
+    filter_compt = np.concatenate(
+            [
+                np.linspace(0, 1, n_grad_freq + 1, endpoint=False),
+                np.linspace(1, 0, n_grad_freq + 2),
+            ]
+        )[1:-1]
+        
+    smoothing_filter = np.outer(
+            filter_compt,
+            filter_compt,
+        )
+    smoothing_filter = smoothing_filter / np.sum(smoothing_filter)
+    # calculate the threshold for each frequency/time bin
+    db_thresh = np.repeat(
+        np.reshape(noise_thresh, [1, len(mean_freq_noise)]),
+        np.shape(sig_stft_db)[1],
+        axis=0,
+    ).T
+    # mask if the signal is above the threshold
+    sig_mask = sig_stft_db < db_thresh
+#     if verbose:
+#         print("Masking:", td(seconds=time.time() - start))
+#         start = time.time()
+    # convolve the mask with a smoothing filter
+    sig_mask = scipy.signal.fftconvolve(sig_mask, smoothing_filter, mode="same")
+    sig_mask = sig_mask * prop_decrease
+#     if verbose:
+#         print("Mask convolution:", td(seconds=time.time() - start))
+#         start = time.time()
+    # mask the signal
+    sig_stft_db_masked = (
+        sig_stft_db * (1 - sig_mask)
+        + np.ones(np.shape(mask_gain_dB)) * mask_gain_dB * sig_mask
+    )  # mask real
+    sig_imag_masked = np.imag(sig_stft) * (1 - sig_mask)
+    sig_stft_amp = (_db_to_amp(sig_stft_db_masked) * np.sign(sig_stft)) + (
+        1j * sig_imag_masked
+    )
+#     if verbose:
+#         print("Mask application:", td(seconds=time.time() - start))
+#         start = time.time()
+    # recover the signal
+    recovered_signal = _istft(sig_stft_amp)
+    recovered_spec = _amp_to_db(
+        np.abs(_stft(recovered_signal)))
+
+    return recovered_signal # sig_stft_amp 
+
+
+
+
+#recording parameters
+CHUNK = 1024 #1024
+FORMAT = pyaudio.paInt16
+CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
+RATE = 16000 # 44100
+EXTRA_SECONDS = 2.0
+RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
+BACKGROUND_RECORD_SECONDS = 3
+
+def record_and_denoise( enroll = False):    
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
+                    input=True, frames_per_buffer=CHUNK)
+
+
+    
+    
+    
+    LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
+
+    print(" Recording {} seconds".format(RECORD_SECONDS - EXTRA_SECONDS))
+    print("\n Speak the following sentence for recording: \n {}\n".format(LONG_STRING))
+
+    print(' or\n')
+    print(' You can speak your own secret phrases.')
+    if enroll:
+        print(' If you do so, please let us know your secret phrases:)\n\n')
+    else: 
+        print('\n')
+    print(" Recording starts in soon...\n")
+    
+    frames_bg = []
+    for i in range(0, int(RATE / CHUNK * (BACKGROUND_RECORD_SECONDS+1) ) ):
+        data = stream.read(CHUNK, exception_on_overflow = False)
+        frames_bg.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    
+    
+    if enroll:input(' Ready to start? (press enter)')
+    else: pass#time.sleep(1)
+    
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
+                    input=True, frames_per_buffer=CHUNK)
+
+
+
+    print(" Recording starts in 3 second...")
+    time.sleep(2)   # start 1 second earlier
+    frames = []
+    
+    print(" Speak now!")
+
+    for i in tqdm(range(0, int(RATE / CHUNK * RECORD_SECONDS))):
+        data = stream.read(CHUNK, exception_on_overflow = False)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    print(" Recording complete.")
+
+#     audio_buffer = b''.join(frames)
+#     bg_buffer = b''.join(frames_bg)
+    audio_data = (np.frombuffer(b''.join(frames), dtype=np.int16)/32767)
+    bg_data = (np.frombuffer(b''.join(frames_bg), dtype=np.int16)/32767)
+    
+    denoised_data = removeNoise(audio_data, bg_data).astype('float32')
+    
+    
+    return denoised_data#, audio_buffer, bg_buffer
+
+
+def write_recording(fpath, audio_data):  
+    librosa.output.write_wav(fpath+'.wav', audio_data, sr=RATE)
+    
+    
+#     wf = wave.open(fpath, 'wb') 
+#     wf.setnchannels(CHANNELS)
+#     wf.setsampwidth(2) #p.get_sample_size(FORMAT)
+#     wf.setframerate(RATE)
+#     wf.writeframes(buffer)#b''.join(frames)
+#     wf.close()
+    
+def fpath_numbering(fpath, extension = '.wav'):
+    while os.path.exists(fpath+extension):
+        if fpath[-1].isalpha():
+            fpath = fpath+'2'
+        else:
+            fpath = fpath[:-1]+str(int(fpath[-1])+1)
+    return fpath
+    
