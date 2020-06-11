@@ -30,3 +30,5 @@ modelv2/audioset/
 *.rar
 *.tar
 *.zip
+
+pyenv/
