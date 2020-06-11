@@ -20,7 +20,7 @@ modelv2/audioset/
 
 #  Large files
 **.wav
-**.npz
+**.npy
 **.csv
 
 # Packages #
