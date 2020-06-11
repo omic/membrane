@@ -14,9 +14,12 @@ modelv2/audioset/
 # Transfer Learning Weights
 **.mat
 **.h5
-**.wav
 **.ckpt
+
+#  Large files
+**.wav
 **.npz
+**.csv
 
 # Packages #
 ############

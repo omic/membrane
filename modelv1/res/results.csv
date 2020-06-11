@@ -1,2 +1,0 @@
-input,test,metric,distance,threshold,result
-19-enroll.wav,19-test.wav,cosine,0.09073388687910955,0.1,True
