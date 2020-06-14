@@ -10,65 +10,33 @@ from network import *
 
 # In[22]:
 
-def train(opt):
+def train(n_epochs = N_EPOCHS,  pairs_file = PAIRS_FILE, test_users = None ):#opt
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
-
-
-    # In[23]:
-
-
     weights = load_pretrained_weights()
-
-
-    # In[24]:
-
 
     model = VggVox(weights=weights)
     model = model.to(device)
 
-
-    # In[25]:
-
-
     criterion = ContrastiveLoss()
     criterion = criterion.to(device)
-
-
-    # In[26]:
-
 
     loss_list = []
     best_loss = torch.autograd.Variable(torch.tensor(np.inf)).float()
 
-
-    # In[27]:
-
-
-    LEARNING_RATE = 1e-3
+#     LEARNING_RATE = 1e-3
 #     N_EPOCHS = 1 #15
-    N_EPOCHS = int(opt.n_epochs)
-    BATCH_SIZE = 64
-
-
-    # In[28]:
-
+#     N_EPOCHS = int(opt.n_epochs)
+#     N_EPOCH = n_epochs
+#     BATCH_SIZE = 64
 
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-
-    # In[29]:
-
-
     # model, _, optimizer = load_saved_model("checkpoint_20181211-030043_0.014894404448568821.pth.tar", test=False)
 
+#     test_users = opt.test_users
 
-
-    # In[30]:
-
-    test_users = opt.test_users
-
-    voxceleb_dataset = VoxCelebDataset(PAIRS_FILE, test_users = test_users)#PAIRS_FILE
+    voxceleb_dataset = VoxCelebDataset(pairs_file, test_users = test_users)#PAIRS_FILE
     train_dataloader = DataLoader(voxceleb_dataset, batch_size=BATCH_SIZE, shuffle=True,
                                   num_workers=4)
     n_batches = int(len(voxceleb_dataset) / BATCH_SIZE)
@@ -76,10 +44,6 @@ def train(opt):
     print("training unique users", len(voxceleb_dataset.training_users))
     print("training samples", len(voxceleb_dataset))
     print("batches", int(len(voxceleb_dataset) / BATCH_SIZE))
-
-
-    # In[31]:
-
 
     for epoch in range(1, N_EPOCHS+1):
         running_loss = torch.zeros(1)
@@ -135,25 +99,30 @@ def train(opt):
 #     plt.show()
 
 
-# In[32]:
-
-
-# plt.plot(loss_list)
-
-
-# In[ ]:
 
 if __name__ == '__main__':
 # 	get_id_result()
-	parser = argparse.ArgumentParser()
-	subparsers = parser.add_subparsers()
-	parser_train = subparsers.add_parser('train')
-	parser_train.add_argument('--test_users', nargs='*', default = None)#, default = 'data/wav/enroll/19-enroll.wav')
-	parser_train.add_argument('--n_epochs', default = 1)#, default = 'data/wav/test/19-test.wav')
-# 	parser_scoring.add_argument('--metric', default = 'cosine')
-# 	parser_scoring.add_argument('--threshold', default = 0.1)
-	parser_train.set_defaults(func=train)
-	opt = parser.parse_args()
-	opt.func(opt)
+    parser = argparse.ArgumentParser()
+# 	subparsers = parser.add_subparsers()
+# 	parser_train = subparsers.add_parser('train')
+# 	parser_train.add_argument('--test_users', nargs='*', default = None)#, default = 'data/wav/enroll/19-enroll.wav')
+# 	parser_train.add_argument('--n_epochs', default = 1)#, default = 'data/wav/test/19-test.wav')
+# # 	parser_scoring.add_argument('--metric', default = 'cosine')
+# # 	parser_scoring.add_argument('--threshold', default = 0.1)
+# 	parser_train.set_defaults(func=train)
+# 	opt = parser.parse_args()
+# 	opt.func(opt)
+#     parser.add_argument('--augment',
+#                         default=False, action="store_true",
+#                         help="Train with augmented data")
 
+    parser.add_argument('--test_users', nargs='*', default = None,
+                       help="Leave out test sets from train sets")#, default = 'data/wav/enroll/19-enroll.wav')
+    parser.add_argument('--n_epochs', default = 1,
+                       help = 'Set the number of epochs')
+    parser.add_argument('--pairs_file', default = os.path.join(TRAIN_PATH,'../',PAIRS_FILE),
+                       help = 'Pairs csv file path')
 
+    args = parser.parse_args()
+    
+    train(n_epochs = args.n_epochs, pairs_file = args.pairs_file, test_users = args.test_users)

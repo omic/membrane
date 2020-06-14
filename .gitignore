@@ -7,11 +7,14 @@ modelv2/recordings/
 modelv2/stft*/
 modelv2/__pycache__/
 modelv2/.ipynb_checkpoints/
-modelv1/
+modelv2/datasets/
+toy_modelv1/
 
 # locally working files
 realtime.py
 modelv2/audioset/
+**/local**
+
 
 # Transfer Learning Weights
 **.mat
@@ -21,6 +24,7 @@ modelv2/audioset/
 #  Large files
 **.wav
 **.npy
+**.npz
 **.csv
 
 # Packages #

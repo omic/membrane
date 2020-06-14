@@ -58,15 +58,15 @@ from utils import *
 
 #     return get_stft(all_x)
 
-# def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
-#     all_stft_paths = []
-#     for i in tqdm(range(len(all_stft))):
-#         user_stft = all_stft[i]
-#         stft_fname = '_'.join(recording.split('/')[-3:])[:-4] + '.npy'
-#         stft_path = get_rel_path(os.path.join(RECORDING_STFT_FOLDER, stft_fname))
-#         np.save(stft_path, user_stft)
-#         all_stft_paths.append(stft_path)
-#     return all_stft_paths
+def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
+    all_stft_paths = []
+    for i in tqdm(range(len(all_stft))):
+        user_stft = all_stft[i]
+        stft_fname = '_'.join(recording.split('/')[-3:])[:-4] + '.npy'
+        stft_path = get_rel_path(os.path.join(RECORDING_STFT_FOLDER, stft_fname))
+        np.save(stft_path, user_stft)
+        all_stft_paths.append(stft_path)
+    return all_stft_paths
 
 
 # In[23]:
@@ -84,7 +84,7 @@ def recorder(opt):
     stfts = split_recording(fpath)
     print(f'stfts lengths: {len(stfts)}')
     print(f'stft shape: {stfts[0].shape}')
-    stft_paths = save_stft(stfts, ENROLL_RECORDING_FNAME)
+    stft_paths = save_stft(stfts, ENROLL_RECORDING_FNAME, stft_path = RECORDING_STFT_FOLDER)
 
 
 if __name__ == "__main__":

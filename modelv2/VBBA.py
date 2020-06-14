@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import warnings
+warnings.filterwarnings('ignore')
+
 from argparse import ArgumentParser
 from utils import *
 from network import *
-
 
 def fwd_pass(user_stfts):
     """
@@ -130,7 +132,83 @@ def clear_database():
         pickle.dump(dict(), fhand)
     print("Deleted all users in database")
 
+def do_list():
+    users_list = show_current_users()
+    if not users_list:
+        print("No users found")
+    else:
+        print("\n".join(users_list))
+        
+        
+def do_enroll(username):
+    assert username is not None, "Enter username"
+    if username in show_current_users():
+        print("Username already exists in database.")
+        var = input("Do you want to replace? (y/n):")
+        if var == 'y' or 'yes': pass
+        else: return
+    enroll_new_user(username)
+    
+    
+def do_verify(username):
+    assert username is not None, "Enter username"
+    assert username in show_current_users(), "Unrecognized username"
+    verified,  denoised_data = verify_user(username)
+    if verified:
+        print("User verified")
+    else:
+        print("Unknown user")
+    var = input("Save recording: (y/n)?")
+    if var == 'y' or var == 'yes':
+        fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
+        fpath = fpath_numbering(fpath)
+        write_recording(fpath,  denoised_data)
+#             write_recording(fpath+'_bg.wav', bg_buffer)
+        print(f'{fpath}.wav saved')
+    else:#if var == 'n' or var == 'no':
+#             os.remove(fpath)
+#             print(f'{fpath}.wav removed')
+        print('Recording removed')
+    
+    
+def do_identify(username):
+    identified_user,  denoised_data = identify_user()
+    print("Identified User {}".format(identified_user))
+    correct_user = input(f"Are you {identified_user}? (y/n): ")
 
+    var = input("Save recording? (y/n): ")
+    if var == 'y' or var == 'yes':
+        fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
+        fpath = fpath_numbering(fpath)
+        path_split = fpath.rsplit('/',1)
+        if correct_user =='y' or correct_user == 'yes':
+#                 dir_path = path_split[0]
+#                 fname = path_split[-1]
+            new_fpath = os.path.join(path_split[0],identified_user+'_'+path_split[-1])
+#                 os.rename(fpath, new_fpath)
+        else:
+            new_fpath = os.path.join(path_split[0],'unknown'+'_'+path_split[-1])
+#                 os.rename(fpath, new_fpath)
+        write_recording(new_fpath,  denoised_data)
+#             write_recording(new_fpath+'_bg.wav', bg_buffer)
+        print(f'{new_fpath}.wav saved')
+
+    else: #if var == 'n' or var == 'no':
+#             os.remove(fpath)
+#             print(f'{fpath} removed')
+        print('Recording removed')
+
+    
+def do_delete(username):
+    assert username is not None, "Enter username"
+    assert username in show_current_users(), "Unrecognized username"
+    delete_user(username)
+    
+    
+    
+    
+    
+    
 def main():
     parser = ArgumentParser(description="Speaker Identification and Verification")
     parser.add_argument('-l', '--list-current-users', dest="list",
@@ -157,76 +235,24 @@ def main():
     args = parser.parse_args()
 
     if args.list:
-        users_list = show_current_users()
-        if not users_list:
-            print("No users found")
-        else:
-            print("\n".join(users_list))
+        do_list()
 
     elif args.enroll:
         username = args.username
-        assert username is not None, "Enter username"
-        if username in show_current_users():
-            print("Username already exists in database.")
-            var = input("Do you want to replace? (y/n):")
-            if var == 'y' or 'yes': pass
-            else: return
-        enroll_new_user(username)
-
+        do_enroll(username)
+        
     elif args.verify:
         username = args.username
-        assert username is not None, "Enter username"
-        assert username in show_current_users(), "Unrecognized username"
-        verified,  denoised_data = verify_user(username)
-        if verified:
-            print("User verified")
-        else:
-            print("Unknown user")
-        var = input("Save recording: (y/n)?")
-        if var == 'y' or var == 'yes':
-            fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
-            fpath = fpath_numbering(fpath)
-            write_recording(fpath,  denoised_data)
-#             write_recording(fpath+'_bg.wav', bg_buffer)
-            print(f'{fpath}.wav saved')
-        else:#if var == 'n' or var == 'no':
-#             os.remove(fpath)
-#             print(f'{fpath}.wav removed')
-            print('Recording removed')
+        do_verify(username)
         
 
     elif args.identify:
-        identified_user,  denoised_data = identify_user()
-        print("Identified User {}".format(identified_user))
-        correct_user = input(f"Are you {identified_user}? (y/n): ")
-        
-        var = input("Save recording? (y/n): ")
-        if var == 'y' or var == 'yes':
-            fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
-            fpath = fpath_numbering(fpath)
-            path_split = fpath.rsplit('/',1)
-            if correct_user =='y' or correct_user == 'yes':
-#                 dir_path = path_split[0]
-#                 fname = path_split[-1]
-                new_fpath = os.path.join(path_split[0],identified_user+'_'+path_split[-1])
-#                 os.rename(fpath, new_fpath)
-            else:
-                new_fpath = os.path.join(path_split[0],'unknown'+'_'+path_split[-1])
-#                 os.rename(fpath, new_fpath)
-            write_recording(new_fpath,  denoised_data)
-#             write_recording(new_fpath+'_bg.wav', bg_buffer)
-            print(f'{new_fpath}.wav saved')
-
-        else: #if var == 'n' or var == 'no':
-#             os.remove(fpath)
-#             print(f'{fpath} removed')
-            print('Recording removed')
+        do_identify()
 
     elif args.delete:
         username = args.username
-        assert username is not None, "Enter username"
-        assert username in show_current_users(), "Unrecognized username"
-        delete_user(username)
+        do_delete(username)
+
 
     elif args.clear:
         clear_database()

@@ -1,53 +1,88 @@
 SERVER = False
 import os
 
+ROOT_DIR = ""
+CHECKPOINTS_FOLDER = "checkpoints"
+
+
+# Data_Part
+TOTAL_USERS = 5
+CLIPS_PER_USER = 2 #15 #15
+MIN_CLIP_DURATION = 2 #5 #2 #3
+NUM_NEW_CLIPS = 5
+TRAIN_PAIR_SAMPLES = 1000
+
+# ML_Part
+DISTANCE_METRIC = "cosine"
+THRESHOLD = 0.95 # 0.8
+LEARNING_RATE = 1e-3 #5e-4
+N_EPOCHS = 1 #30
+BATCH_SIZE = 32
+TRAINING_USERS = 100
+SIMILAR_PAIRS = 2#20
+DISSIMILAR_PAIRS = SIMILAR_PAIRS * 5
+
+
+####### For both Training, Test ##########
+def find_username(fpath):
+    i = fpath.rfind('/')
+    return fpath[i+1:fpath.find('-', i)]
+#     return fpath[i+1:fpath.find('_', i)]
+
+
+####### For each Training data ##############
+TRAIN_PATH = 'datasets/train-other-500'
+STFT_FOLDER = os.path.join(TRAIN_PATH.rsplit('/')[0],'stft_{}s'.format(int(MIN_CLIP_DURATION)))
+PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
+CLIPS_LIST_FILE = 'clips_list.txt'
+
+
+##### Augmentation ####
+AUGMENT = True
+SHIFT_CHANCE = 0.5 # 20% chance of shifting
+W_NOISE_CHANCE = 0.8 #80% chance of white noise
+NOISE_CHANCE = 0.5 # 50% chance of putting noise
+BACKGROUND_LIST_PATH = 'datasets/bg_noises.txt'
+
+
+####### For each Test data ###############
+TEST_STFT_FOLDER = 'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
+TEST_PAIRS_FILE = 'test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
+TEST_PATH = 'wav_test_subset'
+TEST_CLIPS_LIST_FILE = 'test_clips_list.txt'
+
+# For recorder.py
+RECORDING_PATH = "recordings"
+RECORDING_STFT_FOLDER = os.path.join(RECORDING_PATH,'stft')#RECORDING_PATH + '/'+'stft'
+
 
 # Files and Directories
-ROOT_DIR = ""
-TRAIN_PATH = 'wav_train_subset'
-TEST_PATH = 'wav_test_subset'
-CHECKPOINTS_FOLDER = "checkpoints"
 VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
 
 
-#Recording
-RECORDING_PATH = "recordings"
-ENROLL_RECORDING_FNAME = "enroll_user_recording"#.wav
+# VBBA.py
+ENROLL_RECORDING_FNAME = "enroll_recording"#.wav
 VERIFY_RECORDING_FNAME = "veri_recording" #"verify_user_recording.wav"
 IDENTIFY_RECORDING_FNAME = "iden_recording" #"identify_user_recording.wav"
-# MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
+    # MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
 VERIFICATION_FOLDER = "tested_users"
 
-# Data_Part
-TOTAL_USERS = 100
-CLIPS_PER_USER = 15 #15
-MIN_CLIP_DURATION = 2 #5 #2 #3
-NUM_NEW_CLIPS = 5
 
 
 
-# ML_Part
-TRAINING_USERS = 100
-SIMILAR_PAIRS = 20#20
-DISSIMILAR_PAIRS = SIMILAR_PAIRS * 5
-DISTANCE_METRIC = "cosine"
-THRESHOLD = 0.95 # 0.8
 
-LEARNING_RATE = 5e-4
-N_EPOCHS = 30
-BATCH_SIZE = 32
 
-STFT_FOLDER = 'stft' + str(int(MIN_CLIP_DURATION))
-TEST_STFT_FOLDER = 'test_stft' + str(int(MIN_CLIP_DURATION))
-RECORDING_STFT_FOLDER = os.path.join(RECORDING_PATH,'stft')#RECORDING_PATH + '/'+'stft'
 
-PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
+
+
 # PAIRS_FILE = 'pairs.csv'
-TEST_PAIRS_FILE = 'test_pairs.csv'
+
 
 assert SIMILAR_PAIRS <= CLIPS_PER_USER * (CLIPS_PER_USER - 1)
+
+
 
 
 from tqdm import tqdm
@@ -132,18 +167,18 @@ def wavPlayer(filepath):
     """%(filepath)
     display(HTML(src))
 
+# in dataprepocessing
+# def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION):
+#     all_x = []
+#     all_sr = []
+#     for path in tqdm(clip_list):
+#         x, sr = librosa.load(path, sr=None, offset=offset,
+#                              duration=duration)
+#         all_x.append(x)
+#         all_sr.append(sr)
 
-def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION):
-    all_x = []
-    all_sr = []
-    for path in tqdm(clip_list):
-        x, sr = librosa.load(path, sr=None, offset=offset,
-                             duration=duration)
-        all_x.append(x)
-        all_sr.append(sr)
-
-    assert len(np.unique(np.array(all_sr))) == 1
-    return all_x, all_sr
+#     assert len(np.unique(np.array(all_sr))) == 1
+#     return all_x, all_sr
 
 
 
@@ -290,15 +325,15 @@ def split_loaded_data(data, sr = 16000):
     return get_stft(all_x)
 
 
-def save_stft(all_stft, recording=ENROLL_RECORDING_FNAME):
-    all_stft_paths = []
-    for i in tqdm(range(len(all_stft))):
-        user_stft = all_stft[i]
-        stft_fname = '_'.join(recording.split('/')[-3:])[:-4] + '.npy'
-        stft_path = get_rel_path(os.path.join(RECORDING_STFT_FOLDER, stft_fname))
-        np.save(stft_path, user_stft)
-        all_stft_paths.append(stft_path)
-    return all_stft_paths
+# def save_stft(all_stft, audio_path=ENROLL_RECORDING_FNAME, stft_path = STFT_FOLDER):
+#     all_stft_paths = []
+#     for i in tqdm(range(len(all_stft))):
+#         user_stft = all_stft[i]
+#         stft_fname = '_'.join(audio_path.split('/')[-3:])[:-4] + '.npy'
+#         stft_path = get_rel_path(os.path.join(stft_path, stft_fname))
+#         np.save(stft_path, user_stft)
+#         all_stft_paths.append(stft_path)
+#     return all_stft_paths
 
 # moved to realtime.py
 # class AudioRec(object):
@@ -451,7 +486,8 @@ def removeNoise(
     recovered_spec = _amp_to_db(
         np.abs(_stft(recovered_signal)))
 
-    return recovered_signal # sig_stft_amp 
+    return recovered_signal #audio data as if loaded from librosa.load
+# return sig_stft_amp 
 
 
 
@@ -553,4 +589,7 @@ def fpath_numbering(fpath, extension = '.wav'):
         else:
             fpath = fpath[:-1]+str(int(fpath[-1])+1)
     return fpath
+    
+
+    
     
