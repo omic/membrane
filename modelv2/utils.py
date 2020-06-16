@@ -69,7 +69,7 @@ SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
 VERIFICATION_FOLDER = "tested_users"
 
-NOISE_DURATION_FROM_FILE = 4 #(seconds)
+NOISE_DURATION_FROM_FILE = 2 #(seconds)
 
 
 
