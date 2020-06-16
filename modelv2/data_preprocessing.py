@@ -41,7 +41,11 @@ def get_user_clips(clip_path = CLIP_PATH, clips_per_user=CLIPS_PER_USER):
     
     with open(get_rel_path(clip_path, 'r')) as f:
         num_users = 0
+        pass_users = 0
         for line in tqdm(f):
+            while pass_users<PASS_FIRST_USERS:
+                pass_users+=1
+                continue
             paths = line.split()
 #             paths = [get_rel_path("/".join(p.split("/"))) 
 #                      for p in paths]
@@ -220,6 +224,7 @@ stft_paths = save_stft(all_stft, all_user_clips)
 data = list(itertools.product(stft_paths, stft_paths))
 stft_len = len(stft_paths)
 print('stft_len: ',stft_len)
+# if TRAIN_PAIR_SAMPLES
 # data = zip(np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES),np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES))
 df = pd.DataFrame(data, columns=["path1", "path2"])
 df = df[~(df.path1 == df.path2)]  # to drop samples when path1 and path2 are same

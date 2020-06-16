@@ -6,11 +6,11 @@ CHECKPOINTS_FOLDER = "checkpoints"
 
 
 # Data_Part
-TOTAL_USERS = 5
-CLIPS_PER_USER = 2 #15 #15
+TOTAL_USERS = 100
+CLIPS_PER_USER = 15 #15 #15
 MIN_CLIP_DURATION = 2 #5 #2 #3
 NUM_NEW_CLIPS = 5
-TRAIN_PAIR_SAMPLES = 1000
+TRAIN_PAIR_SAMPLES = None #1000
 
 # ML_Part
 DISTANCE_METRIC = "cosine"
@@ -35,7 +35,7 @@ TRAIN_PATH = 'datasets/train-other-500'
 STFT_FOLDER = os.path.join(TRAIN_PATH.rsplit('/')[0],'stft_{}s'.format(int(MIN_CLIP_DURATION)))
 PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 CLIPS_LIST_FILE = 'clips_list.txt'
-
+PASS_FIRST_USERS = 100
 
 ##### Augmentation ####
 AUGMENT = True
@@ -69,7 +69,7 @@ SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
 VERIFICATION_FOLDER = "tested_users"
 
-
+NOISE_DURATION_FROM_FILE = 4 #(seconds)
 
 
 

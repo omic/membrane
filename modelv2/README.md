@@ -30,21 +30,32 @@ python3 VBBA.py (optional argument)
   -i, --identify        Identify a user
   -d, --delete          Delete user from database
   -c, --clear           Clear Database
-  -u USERNAME, --username USERNAME
+  -u, --username        USERNAME
+  -f, --with-file       Provide a recording file rather than record
 ```
 For example:
 ```
-python3 VBBA.py -e -u John_Doe   # Recording starts shortly. Enroll for John Doe
+python3 VBBA.py -e -u John_Doe   # Recording starts shortly. Enroll for John Doe.
+```
+```
+python3 VBBA.py -e -u John_Doe -f recording/John_Doe_1.mp3  # Enroll for John Doe with recording file.
 ```
 ```
 python3 VBBA.py -v -u John_Doe   # Recording starts shortly. Verify it with John_Doe's enrolled voice.
 ```
 ```
+python3 VBBA.py -v -u John_Doe -f recordings/John_Doe_1.mp3   # Verify recording file with John_Doe's enrolled voice.
+```
+```
 python3 VBBA.py -i   # Recording starts shortly. Detect and identify the voice among enrolled users.
+```
+```
+python3 VBBA.py -i -f recordings/John_Doe_1.mp3   # Detect and identify the recording file among enrolled users.
 ```
 ```
 python3 VBBA.py -l   # Display enrolled users.
 ```
+
 
 ### Train
 ```

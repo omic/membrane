@@ -8,6 +8,7 @@ modelv2/stft*/
 modelv2/__pycache__/
 modelv2/.ipynb_checkpoints/
 modelv2/datasets/
+modelv2/audio/
 toy_modelv1/
 
 # locally working files

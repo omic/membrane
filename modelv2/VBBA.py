@@ -58,9 +58,15 @@ def show_current_users():
     return list(speaker_models.keys())
 
 
-def get_emb( enroll = False):#fpath
+def get_emb( enroll = False, file = ''):#fpath
 #     record(fpath, enroll)
-    denoised_data = record_and_denoise( enroll)
+    if file:
+        data , _ = librosa.load(file,sr=RATE)
+        noise = data[:RATE*NOISE_DURATION_FROM_FILE]
+        data = data[RATE*NOISE_DURATION_FROM_FILE:]
+        denoised_data = removeNoise(data,noise).astype('float32')
+    else:
+        denoised_data = record_and_denoise( enroll)
 #     user_stfts = split_recording(fpath)
     user_stfts = split_loaded_data(denoised_data, RATE)
     user_stfts = np.expand_dims(user_stfts, axis=1)
@@ -74,13 +80,17 @@ def emb_dist(emb1, emb2):
     return 1 - scipy.spatial.distance.cdist(emb1, emb2, DISTANCE_METRIC).item()
 
 
-def enroll_new_user(username):
-    fpath = os.path.join(ENROLLMENT_FOLDER, username + '_' + ENROLL_RECORDING_FNAME)
-    emb, denoised_data = get_emb( enroll = True)#fpath,
-    store_user_embedding(username, emb)
-    write_recording(fpath,denoised_data)
+def enroll_new_user(username, file = ''):
+    if file:
+        emb, denoised_data = get_emb( enroll = True, file = file)
+        store_user_embedding(username, emb)
+    else:
+        fpath = os.path.join(ENROLLMENT_FOLDER, username + '_' + ENROLL_RECORDING_FNAME)
+        emb, denoised_data = get_emb( enroll = True)#fpath,
+        store_user_embedding(username, emb)
+        write_recording(fpath,denoised_data)
 
-def verify_user(username):
+def verify_user(username, file = ''):
 #     fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
     #username + '_' + VERIFY_RECORDING_FNAME
 #     while os.path.exists(fpath):
@@ -89,7 +99,10 @@ def verify_user(username):
 #             fpath = fname+'2'+'.wav'
 #         else:
 #             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
-    emb,  denoised_data = get_emb()#fpath
+    if file:
+        emb,  denoised_data = get_emb(file = file)
+    else:
+        emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
 #     print(emb.shape, speaker_models[username].shape)  ##let's check the shapes
     dist = emb_dist(emb, speaker_models[username])
@@ -105,9 +118,12 @@ def verify_user(username):
 #         else:
 #             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
 
-def identify_user():
+def identify_user(file = ''):
 #     fpath = os.path.join(VERIFICATION_FOLDER, IDENTIFY_RECORDING_FNAME)
-    emb,  denoised_data = get_emb(fpath)
+    if file:
+        emb,  denoised_data = get_emb(file = file)
+    else:
+        emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
     dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
             for other_user in speaker_models]
@@ -140,20 +156,20 @@ def do_list():
         print("\n".join(users_list))
         
         
-def do_enroll(username):
+def do_enroll(username, file = ''):
     assert username is not None, "Enter username"
     if username in show_current_users():
         print("Username already exists in database.")
         var = input("Do you want to replace? (y/n):")
         if var == 'y' or 'yes': pass
         else: return
-    enroll_new_user(username)
+    enroll_new_user(username, file = file)
     
     
-def do_verify(username):
+def do_verify(username, file = ''):
     assert username is not None, "Enter username"
     assert username in show_current_users(), "Unrecognized username"
-    verified,  denoised_data = verify_user(username)
+    verified,  denoised_data = verify_user(username, file = file)
     if verified:
         print("User verified")
     else:
@@ -171,8 +187,8 @@ def do_verify(username):
         print('Recording removed')
     
     
-def do_identify(username):
-    identified_user,  denoised_data = identify_user()
+def do_identify(username, file = ''):
+    identified_user,  denoised_data = identify_user(file = file)
     print("Identified User {}".format(identified_user))
     correct_user = input(f"Are you {identified_user}? (y/n): ")
 
@@ -231,6 +247,8 @@ def main():
                         help="Clear Database")
     parser.add_argument('-u', '--username', type=str, default=None,
                         help="Name of the user to enroll or verify")
+    parser.add_argument('-f', '--with-file', dest='file', default='',
+                        help="Provide a recording file rather than record")
 
     args = parser.parse_args()
 
@@ -239,15 +257,15 @@ def main():
 
     elif args.enroll:
         username = args.username
-        do_enroll(username)
+        do_enroll(username, args.file)
         
     elif args.verify:
         username = args.username
-        do_verify(username)
+        do_verify(username, args.file)
         
 
     elif args.identify:
-        do_identify()
+        do_identify(args.file)
 
     elif args.delete:
         username = args.username
