@@ -9,6 +9,7 @@ modelv2/__pycache__/
 modelv2/.ipynb_checkpoints/
 modelv2/datasets/
 modelv2/audio/
+modelv2/*stft*/
 toy_modelv1/
 
 # locally working files
@@ -27,6 +28,7 @@ modelv2/audioset/
 **.npy
 **.npz
 **.csv
+**.png
 
 # Packages #
 ############

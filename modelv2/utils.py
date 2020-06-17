@@ -19,14 +19,14 @@ LEARNING_RATE = 1e-3 #5e-4
 N_EPOCHS = 1 #30
 BATCH_SIZE = 32
 TRAINING_USERS = 100
-SIMILAR_PAIRS = 2#20
+SIMILAR_PAIRS = CLIPS_PER_USER*(CLIPS_PER_USER-1)#max #None #2#20 #None for max
 DISSIMILAR_PAIRS = SIMILAR_PAIRS * 5
 
 
 ####### For both Training, Test ##########
-def find_username(fpath):
+def find_username(fpath,splitter = '-'):
     i = fpath.rfind('/')
-    return fpath[i+1:fpath.find('-', i)]
+    return fpath[i+1:fpath.find(splitter, i)]
 #     return fpath[i+1:fpath.find('_', i)]
 
 
@@ -35,7 +35,7 @@ TRAIN_PATH = 'datasets/train-other-500'
 STFT_FOLDER = os.path.join(TRAIN_PATH.rsplit('/')[0],'stft_{}s'.format(int(MIN_CLIP_DURATION)))
 PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 CLIPS_LIST_FILE = 'clips_list.txt'
-PASS_FIRST_USERS = 100
+PASS_FIRST_USERS = 300
 
 ##### Augmentation ####
 AUGMENT = True
@@ -46,10 +46,23 @@ BACKGROUND_LIST_PATH = 'datasets/bg_noises.txt'
 
 
 ####### For each Test data ###############
-TEST_STFT_FOLDER = 'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
-TEST_PAIRS_FILE = 'test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
-TEST_PATH = 'wav_test_subset'
-TEST_CLIPS_LIST_FILE = 'test_clips_list.txt'
+TEST_STFT_FOLDER = 'omic_stft_{}s'.format(int(MIN_CLIP_DURATION))#'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
+TEST_PAIRS_FILE ='omic_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION)) #'test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
+TEST_PATH = 'datasets/omic'#'../../LibriSpeech/test-other'
+TEST_CLIPS_LIST_FILE = 'omic_clips_list'#'test_clips_list.txt'
+TEST_CLIPS_PER_USER = None #(None means max - clips all audio files)
+
+#recording parameters
+import pyaudio
+CHUNK = 1024 #1024
+FORMAT = pyaudio.paInt16
+CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
+RATE = 16000 # 44100
+EXTRA_SECONDS = 2.0
+RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
+BACKGROUND_RECORD_SECONDS = 3
+
+
 
 # For recorder.py
 RECORDING_PATH = "recordings"
@@ -112,11 +125,11 @@ from sklearn.metrics import precision_recall_fscore_support as score
 import librosa
 import librosa.display
 import speech_recognition as sr
-import pyaudio
+# import pyaudio
 import wave
 import contextlib
 import matplotlib.pyplot as plt
-
+# %matplotlib inline
 # import seaborn as sns
 
 import torch
@@ -131,6 +144,9 @@ from torch.utils.checkpoint import checkpoint
 if not os.path.exists(STFT_FOLDER):
     os.mkdir(STFT_FOLDER)
 
+if not os.path.exists(TEST_STFT_FOLDER):
+    os.mkdir(TEST_STFT_FOLDER)
+    
 if not os.path.exists(CHECKPOINTS_FOLDER):
     os.mkdir(CHECKPOINTS_FOLDER)
 
@@ -142,7 +158,6 @@ if not os.path.exists(VERIFICATION_FOLDER):
 
 plt.style.use('seaborn-darkgrid')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
 def get_rel_path(path, server=SERVER, root_dir=ROOT_DIR):
     if server:
@@ -316,8 +331,9 @@ def split_recording(recording=ENROLL_RECORDING_FNAME):
 
     return get_stft(all_x)
 
-def split_loaded_data(data, sr = 16000):
+def split_loaded_data(data, sr = RATE):
     RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
+    RECORD_SECONDS = int(min(RECORD_SECONDS, len(data)/sr))
     all_x = []
     for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
         x = data[offset:offset+MIN_CLIP_DURATION*sr]
@@ -486,20 +502,10 @@ def removeNoise(
     recovered_spec = _amp_to_db(
         np.abs(_stft(recovered_signal)))
 
-    return recovered_signal #audio data as if loaded from librosa.load
+    return recovered_signal.astype('float32') #audio data as if loaded from librosa.load
 # return sig_stft_amp 
 
 
-
-
-#recording parameters
-CHUNK = 1024 #1024
-FORMAT = pyaudio.paInt16
-CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
-RATE = 16000 # 44100
-EXTRA_SECONDS = 2.0
-RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
-BACKGROUND_RECORD_SECONDS = 3
 
 def record_and_denoise( enroll = False):    
     p = pyaudio.PyAudio()
@@ -565,7 +571,7 @@ def record_and_denoise( enroll = False):
     audio_data = (np.frombuffer(b''.join(frames), dtype=np.int16)/32767)
     bg_data = (np.frombuffer(b''.join(frames_bg), dtype=np.int16)/32767)
     
-    denoised_data = removeNoise(audio_data, bg_data).astype('float32')
+    denoised_data = removeNoise(audio_data, bg_data)#.astype('float32')
     
     
     return denoised_data#, audio_buffer, bg_buffer

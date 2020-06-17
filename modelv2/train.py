@@ -116,11 +116,11 @@ if __name__ == '__main__':
 #                         default=False, action="store_true",
 #                         help="Train with augmented data")
 
-    parser.add_argument('--test_users', nargs='*', default = None,
+    parser.add_argument('--test-users', nargs='*', default = None,
                        help="Leave out test sets from train sets")#, default = 'data/wav/enroll/19-enroll.wav')
-    parser.add_argument('--n_epochs', default = 1,
+    parser.add_argument('--n-epochs', default = 1,
                        help = 'Set the number of epochs')
-    parser.add_argument('--pairs_file', default = os.path.join(TRAIN_PATH,'../',PAIRS_FILE),
+    parser.add_argument('--pairs-file', default = os.path.join(TRAIN_PATH,'../',PAIRS_FILE),
                        help = 'Pairs csv file path')
 
     args = parser.parse_args()

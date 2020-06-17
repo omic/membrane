@@ -205,7 +205,7 @@ def load_saved_model(fname, test=True):
     new_model_dict.load_state_dict(checkpoint['state_dict'])
     if test:
         model = new_model_dict.eval()
-    print("Loading model in test mode:", test)
+#     print("Loading model in test mode:", test)
     model = model.to(device)
 
     new_optimizer = optim.Adam(params=model.parameters())

@@ -12,6 +12,8 @@ from network import *
 
 def test(opt):
     TEST_PAIRS_FILE = opt.pairs
+    if opt.val:
+        PAIRS_FILE = opt.val
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
 
@@ -166,7 +168,7 @@ def test(opt):
 
 
     threshold = opt.threshold
-    correct, incorrect = 0, 0
+    correct, incorrect, FP, FN = 0, 0, 0, 0
     user_label = {}
     k=0
     mean_data = []
@@ -201,8 +203,9 @@ if __name__ == '__main__':
 	subparsers = parser.add_subparsers()
 	parser_test = subparsers.add_parser('test')
 # 	parser_test.add_argument('--test_users', nargs='*', default = None)#, default = 'data/wav/enroll/19-enroll.wav')
-	parser_test.add_argument('--threshold', default = 0.95)#, default = 'data/wav/test/19-test.wav')
+	parser_test.add_argument('--threshold', default = 0.99)#, default = 'data/wav/test/19-test.wav')
 	parser_test.add_argument('--pairs', default = os.path.join(TEST_PATH,'../',TEST_PAIRS_FILE))
+	parser_test.add_argument('--val_pairs',dest = 'val', default = '')
 # 	parser_scoring.add_argument('--threshold', default = 0.1)
 	parser_test.set_defaults(func=test)
 	opt = parser.parse_args()

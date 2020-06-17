@@ -126,11 +126,11 @@ def identify_user(file = ''):
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
     dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
-            for other_user in speaker_models]
+            for other_user in speaker_models]#actually similarity
     print('cosine distance: ',dist)
-    username, min_dist = min(dist, key=lambda x:x[1])
+    username, max_similarity = max(dist, key=lambda x:x[1])
 
-    if min_dist > THRESHOLD:
+    if max_similarity > THRESHOLD:
         return username,   denoised_data
     return None,  denoised_data
 
@@ -187,7 +187,7 @@ def do_verify(username, file = ''):
         print('Recording removed')
     
     
-def do_identify(username, file = ''):
+def do_identify( file = ''):
     identified_user,  denoised_data = identify_user(file = file)
     print("Identified User {}".format(identified_user))
     correct_user = input(f"Are you {identified_user}? (y/n): ")

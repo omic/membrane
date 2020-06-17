@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--test',
                         default=False, action="store_true",
                         help="Preprocessing for test data")
-parser.add_argument('--file_list',
+parser.add_argument('--file-list',
                         default='', 
                         help="Provide the txt file of a list of audio paths if audio files are in subdirectories")
 
@@ -29,10 +29,10 @@ if args.file_list:
             for line in f:
                 user = find_username(line)
                 if prev == user or prev is None:
-                    clip.write(line.split('\n')[0]+' ')
+                    clip.write(os.path.join(TRAIN_PATH,'../',line.split('\n')[0]+' '))
                 else:
                     clip.write('\n')
-                    clip.write(line.split('\n')[0]+' ')
+                    clip.write(os.path.join(TRAIN_PATH,'../',line.split('\n')[0]+' '))
                 prev = user
     
 else:

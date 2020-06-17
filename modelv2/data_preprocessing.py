@@ -10,13 +10,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--test',
                         default=False, action="store_true",
                         help="Preprocessing for test data")
+parser.add_argument('--for-enroll',dest = 'val',type=int,
+                        default=0, 
+                        help="Number of each users data taken out for enrollment, which will give separate pairs file.")
 args = parser.parse_args()
 
 if args.test:
-    TRAIN_PATH, PAIRS_FILE, STFT_FOLDER = TEST_PATH, TEST_PAIRS_FILE, TEST_STFT_FOLDER
+    TRAIN_PATH, PAIRS_FILE, STFT_FOLDER, CLIPS_LIST_FILE, CLIPS_PER_USER = TEST_PATH, TEST_PAIRS_FILE, TEST_STFT_FOLDER, TEST_CLIPS_LIST_FILE, TEST_CLIPS_PER_USER
+    PASS_FIRST_USERS = 0
 
     
 CLIP_PATH = get_rel_path(os.path.join(TRAIN_PATH,'../',CLIPS_LIST_FILE))
+
 
 def get_clip_duration(fname, subdirectory = None):
     if subdirectory:
@@ -38,15 +43,19 @@ warnings.filterwarnings("ignore")
 def get_user_clips(clip_path = CLIP_PATH, clips_per_user=CLIPS_PER_USER):
     ### all_user_clips is list of clips representing user and their list of clips
     all_user_clips = []
-    
+#     if args.val:
+#         val_user_clips = []
     with open(get_rel_path(clip_path, 'r')) as f:
         num_users = 0
         pass_users = 0
         for line in tqdm(f):
-            while pass_users<PASS_FIRST_USERS:
+            if pass_users<PASS_FIRST_USERS:
                 pass_users+=1
                 continue
+            
             paths = line.split()
+#             print(len(paths))
+#             input('debug')
 #             paths = [get_rel_path("/".join(p.split("/"))) 
 #                      for p in paths]
 #             paths = [p for p in paths if get_clip_duration(p) > MIN_CLIP_DURATION]#get_clip_duration(p, TRAIN_PATH)
@@ -56,21 +65,43 @@ def get_user_clips(clip_path = CLIP_PATH, clips_per_user=CLIPS_PER_USER):
                 if get_clip_duration(p) > MIN_CLIP_DURATION:
                     collected_paths.append(p)
                     i+=1
-                if i == clips_per_user: break
-            if len(collected_paths) < clips_per_user:
-                continue
+                if clips_per_user is not None:
+                    if i >= clips_per_user: break
+            if clips_per_user is not None:
+                if len(collected_paths) < clips_per_user:
+                    continue
                 
+#             if args.val:
+#                 val_paths = []
+#                 j = 1
+#                 for p in paths[i:]:
+#                     if get_clip_duration(p) > MIN_CLIP_DURATION:
+#                         val_paths.append(p)
+#                         j+=1
+#                     if j >= args.val:
+#                         break
+#                 if len(val_paths) == 0: continue
+#                 val_user_clips.extend(val_paths)
+
             all_user_clips.extend(collected_paths)
             num_users +=1
             if num_users >= TOTAL_USERS: break
 #     assert len(Counter(all_user_clips)) > 1
+
+#     if args.val:
+#         return all_user_clips, val_user_clips
+
     return all_user_clips
 
-
+# if args.val:
+#     all_user_clips, val_user_clips = get_user_clips()
+#     print(len(all_user_clips), "clips")
+#     print(len(val_user_clips), "validation clips")
+# else:
 all_user_clips = get_user_clips()
 print(len(all_user_clips), "clips")
 
-
+# input('debug')
 # all_durations = np.array([get_clip_duration(p, TRAIN_PATH) for p in all_user_clips])
 # assert all_durations.min() > MIN_CLIP_DURATION
 
@@ -219,33 +250,56 @@ stft_paths = save_stft(all_stft, all_user_clips)
 
 
 # In[25]:
+if args.val:
+    val_df = pd.DataFrame()
+    test_df = pd.DataFrame()
+    df = pd.DataFrame(stft_paths, columns = ['path'])
+    df['user'] = df['path'].apply(find_username)
+    for user in df['user'].unique():
+        user_df = df[df['user'] == user]
+        val_df = pd.concat([val_df,user_df[:args.val]])
+        test_df = pd.concat([test_df,user_df[args.val:]])
+    test_data_path = list(itertools.permutations(test_df['path'], 2))
+    test_data_user = list(itertools.permutations(test_df['user'],2))
+    val_data_path = list(itertools.permutations(val_df['path'], 2))
+    val_data_user = list(itertools.permutations(val_df['user'], 2))
+    df = pd.concat([pd.DataFrame(test_data_path,columns = ['path1','path2']),\
+    pd.DataFrame(test_data_user,columns = ['user1','user2'])],axis=1)
+    val_df = pd.concat([pd.DataFrame(val_data_path,columns = ['path1','path2']),\
+    pd.DataFrame(val_data_user,columns = ['user1','user2'])],axis=1)  
+    
+else:
+    data = list(itertools.permutations(stft_paths, 2))
+    stft_len = len(stft_paths)
+    print('stft_len: ',stft_len)
+    # if TRAIN_PAIR_SAMPLES
+    # data = zip(np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES),np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES))
+    df = pd.DataFrame(data, columns=["path1", "path2"])
+#     df = df[~(df.path1 == df.path2)]  # to drop samples when path1 and path2 are same
 
 
-data = list(itertools.product(stft_paths, stft_paths))
-stft_len = len(stft_paths)
-print('stft_len: ',stft_len)
-# if TRAIN_PAIR_SAMPLES
-# data = zip(np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES),np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES))
-df = pd.DataFrame(data, columns=["path1", "path2"])
-df = df[~(df.path1 == df.path2)]  # to drop samples when path1 and path2 are same
-
-
-# In[33]:
+    # In[33]:
 
 
 
-# In[39]:
+    # In[39]:
 
 
-# df['user1'] = df['path1'].apply(lambda x: x[x.find('/')+1: x.find('_',x.find('/'))])
-# df['user2'] = df['path2'].apply(lambda x: x[x.find('/')+1: x.find('_',x.find('/'))])
+    # df['user1'] = df['path1'].apply(lambda x: x[x.find('/')+1: x.find('_',x.find('/'))])
+    # df['user2'] = df['path2'].apply(lambda x: x[x.find('/')+1: x.find('_',x.find('/'))])
 
 
-df['user1'] = df['path1'].apply(find_username)
-df['user2'] = df['path2'].apply(find_username)
-
-df['label'] = (df.user1 == df.user2).astype('int')
-df['label'] = np.abs(df.label - 1)
+    df['user1'] = df['path1'].apply(find_username)
+    df['user2'] = df['path2'].apply(find_username)
+    
+    
+    
+def make_label(df):
+    df['label'] = (df.user1 == df.user2).astype('int8')
+    df['label'] = np.abs(df.label - 1)
+    return df
+df = make_label(df)
+if args.val: val_df = make_label(val_df)
 print("Total unique users", df.user1.nunique()) 
 # assert df.user1.nunique() == TOTAL_USERS
 # assert df.user2.nunique() == TOTAL_USERS
@@ -281,7 +335,16 @@ PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../', PAIRS_FILE)
 # PAIRS_FILE = 'pairs_test.csv'
 pairs_df.to_csv(PAIRS_FILE_PATH, index=False)
 
+if args.val:
+    pairs_df = val_df #.sample(TRAIN_PAIR_SAMPLES)
 
+
+# In[43]:
+
+    PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../','val_'+ PAIRS_FILE)
+
+    # PAIRS_FILE = 'pairs_test.csv'
+    pairs_df.to_csv(PAIRS_FILE_PATH, index=False)
 # In[ ]:
 
 
