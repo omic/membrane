@@ -7,32 +7,33 @@ from utils import *
 from network import *
 
 
-# #############Voice-To-Text#############
-# def store_user_phrase(username, phrase):
-#     """
-#     this function adds username and user's secret phrase into database
-#     """
-#     speaker_phrases = load_speaker_phrases()
-#     speaker_phrses[username] = phrase
-#     with open(SPEAKER_PHRASES_FILE, 'wb') as fhand:
-#         pickle.dump(speaker_phrases, fhand)
-#     print("Successfully added user {}'s phrase to database".format(username))
+#############Voice-To-Text#############
+def store_user_phrase(username, phrase):
+    """
+    this function adds username and user's secret phrase into database
+    """
+    speaker_phrases = load_speaker_phrases()
+    speaker_phrases[username] = phrase
+    with open(SPEAKER_PHRASES_FILE, 'wb') as fhand:
+        pickle.dump(speaker_phrases, fhand)
+    print("Successfully added user {}'s phrase to database".format(username))
 
-# def load_speaker_phrases(file = SPEAKER_PHRASES_FILE):
-#     if not os.path.exists(file):
-#         return dict()
+def load_speaker_phrases(file = SPEAKER_PHRASES_FILE):
+    if not os.path.exists(file):
+        return dict()
 
-#     with open(file, 'rb') as fhand:
-#         speaker_phrases = pickle.load(fhand)
+    with open(file, 'rb') as fhand:
+        speaker_phrases = pickle.load(fhand)
 
-#     return speaker_phrases
+    return speaker_phrases
 
-# def identify_user_by_phrase(data):
-#     phrase = get_text(data)
-#     speaker_phrases = load_speaker_phrases()
-#     max_idx = np.argmax(list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
-#     matched_user = list(speaker_phrases)[max_idx]
-#     return matched_user
+def identify_user_by_phrase(data):
+    phrase = get_text(data)
+    speaker_phrases = load_speaker_phrases()
+    max_idx = np.argmax(list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
+    print('phrase scores:',list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
+    matched_user = list(speaker_phrases)[max_idx]
+    return matched_user
 
 
 
@@ -91,7 +92,7 @@ def show_current_users():
     return list(speaker_models.keys())
 
 
-def get_emb( enroll = False, file = ''):#fpath
+def get_emb( enroll = False, file = '', phrase = ''):#fpath
 #     record(fpath, enroll)
     if file:
         data , _ = librosa.load(file,sr=RATE)
@@ -102,7 +103,7 @@ def get_emb( enroll = False, file = ''):#fpath
         noise, data = np.split(data,[NOISE_DURATION_FROM_FILE])
         denoised_data = removeNoise(data,noise).astype('float32')
     else:
-        denoised_data = record_and_denoise( enroll)
+        denoised_data = record_and_denoise( enroll, phrase = '')
 #     user_stfts = split_recording(fpath)
     user_stfts = split_loaded_data(denoised_data, RATE)
     user_stfts = np.expand_dims(user_stfts, axis=1)
@@ -112,38 +113,42 @@ def get_emb( enroll = False, file = ''):#fpath
     return emb, denoised_data  #audio_buffer, bg_buffer 
 
 
-def emb_dist(emb1, emb2):
-    return 1 - scipy.spatial.distance.cdist(emb1, emb2, DISTANCE_METRIC).item()
+# def emb_dist(emb1, emb2):
+#     return 1 - scipy.spatial.distance.cdist(emb1, emb2, DISTANCE_METRIC).item()
 
 
 def enroll_new_user(username, file = ''):
     if file:
         emb, denoised_data = get_emb( enroll = True, file = file)
-        store_user_embedding(username, emb)
+        print("\n Please type your phrase.\n")
+        print(" If you want to use auto detection of your phrase please hit \'Enter\'.\n")
+        phrase = input(" Type phrase or hit \'Enter\': ").lower()
+        if phrase == '':
+            phrase = get_text(denoised_data)
     else:
         fpath = os.path.join(ENROLLMENT_FOLDER, username + '_' + ENROLL_RECORDING_FNAME)
-        emb, denoised_data = get_emb( enroll = True)#fpath,
-        store_user_embedding(username, emb)
+        print(" \nPlease type a phrase you want to use. \n")
+        print(" If you want to use auto detection of your phrase please hit \'Enter\'.\n")
+        phrase = input(" Type phrase or hit \'Enter\': ").lower()
+        emb, denoised_data = get_emb( enroll = True, phrase = phrase)#fpath,
         write_recording(fpath,denoised_data)
-
-def verify_user(username, file = ''):
-#     fpath = os.path.join(VERIFICATION_FOLDER, username + '_' + VERIFY_RECORDING_FNAME)
-    #username + '_' + VERIFY_RECORDING_FNAME
-#     while os.path.exists(fpath):
-#         fname = fpath.split('.wav')[0]
-#         if fname[-1].isalpha():
-#             fpath = fname+'2'+'.wav'
-#         else:
-#             fpath = fname[:-1]+str(int(fname[-1])+1)+'.wav'
+        if phrase =='':
+            phrase = get_text(denoised_data)
+    store_user_embedding(username, emb)
+    store_user_phrase(username, phrase)
+    
+def verify_user( file = ''):
     if file:
         emb,  denoised_data = get_emb(file = file)
     else:
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
-#     print(emb.shape, speaker_models[username].shape)  ##let's check the shapes
-    dist = emb_dist(emb, speaker_models[username])
-    print('cosine distance: ',dist)
-    return dist > THRESHOLD , denoised_data   #, fpath
+    username = identify_user_by_phrase(denoised_data)
+    c_score = cosine_similarity(emb, speaker_models[username])
+    E_dist = euclidean_distances(emb, speaker_models[username])
+    print('cosine distance: ',c_score)
+    print('Euclidean distance: ',E_dist)
+    return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , denoised_data, username  #, fpath
 
 
 # def fname_numbering(fpath):
@@ -174,9 +179,13 @@ def identify_user(file = ''):
 def delete_user(username):
     speaker_models = load_speaker_models()
     _ = speaker_models.pop(username)
+    speaker_phrases = load_speaker_phrases()
+    _ = speaker_phrases.pop(username)
     print("Successfully removed {} from database".format(username))
     with open(SPEAKER_MODELS_FILE, 'wb') as fhand:
         pickle.dump(speaker_models, fhand)
+    with open(SPEAKER_PHRASES_FILE, 'wb') as fhand:
+        pickle.dump(speaker_phrases, fhand)
 
 
 def clear_database():
@@ -193,21 +202,25 @@ def do_list():
         
         
 def do_enroll(username, file = ''):
+    print()
     assert username is not None, "Enter username"
     if username in show_current_users():
         print("Username already exists in database.")
         var = input("Do you want to replace? (y/n):")
-        if var == 'y' or var =='yes': pass
-        else: return
+        if var == 'y' or var =='yes':
+            pass
+        else:
+            return
     enroll_new_user(username, file = file)
     
     
-def do_verify(username, file = ''):
-    assert username is not None, "Enter username"
-    assert username in show_current_users(), "Unrecognized username"
-    verified,  denoised_data = verify_user(username, file = file)
+def do_verify( file = ''):
+    print()
+#     assert username is not None, "Enter username"
+#     assert username in show_current_users(), "Unrecognized username"
+    verified,  denoised_data, username = verify_user( file = file)
     if verified:
-        print("User verified")
+        print("User verified: ", username)
     else:
         print("Unknown user")
     var = input("Save recording: (y/n)?")
@@ -262,61 +275,70 @@ def do_delete(username):
     
     
 def main():
-    parser = ArgumentParser(description="Speaker Identification and Verification")
-    parser.add_argument('-l', '--list-current-users', dest="list",
-                        default=False, action="store_true",
-                        help="Show current enrolled users")
-    parser.add_argument('-e', '--enroll', dest="enroll",
-                        default=False, action="store_true",
-                        help="Enroll a new user")
-    parser.add_argument('-v', '--verify', dest="verify",
-                        default=False, action="store_true",
-                        help="Verify a user from the ones in the database")
-    parser.add_argument('-i', '--identify', dest="identify",
-                        default=False, action="store_true",
-                        help="Identify a user")
-    parser.add_argument('-d', '--delete', dest="delete",
-                        default=False, action="store_true",
-                        help="Delete user from database")
-    parser.add_argument('-c', '--clear', dest="clear",
-                        default=False, action="store_true",
-                        help="Clear Database")
-    parser.add_argument('-u', '--username', type=str, default=None,
-                        help="Name of the user to enroll or verify")
-    parser.add_argument('-f', '--with-file', dest='file', default='',
-                        help="Provide a recording file rather than record")
+#     parser = ArgumentParser(description="Speaker Identification and Verification")
+#     parser.add_argument('-l', '--list-current-users', dest="list",
+#                         default=False, action="store_true",
+#                         help="Show current enrolled users")
+#     parser.add_argument('-e', '--enroll', dest="enroll",
+#                         default=False, action="store_true",
+#                         help="Enroll a new user")
+#     parser.add_argument('-v', '--verify', dest="verify",
+#                         default=False, action="store_true",
+#                         help="Verify a user from the ones in the database")
+#     parser.add_argument('-i', '--identify', dest="identify",
+#                         default=False, action="store_true",
+#                         help="Identify a user")
+#     parser.add_argument('-d', '--delete', dest="delete",
+#                         default=False, action="store_true",
+#                         help="Delete user from database")
+#     parser.add_argument('-c', '--clear', dest="clear",
+#                         default=False, action="store_true",
+#                         help="Clear Database")
+#     parser.add_argument('-u', '--username', type=str, default=None,
+#                         help="Name of the user to enroll or verify")
+#     parser.add_argument('-f', '--with-file', dest='file', default='',
+#                         help="Provide a recording file rather than record")
 
-    args = parser.parse_args()
+#     args = parser.parse_args()
 
-    if args.list:
-        do_list()
+#     if args.list:
+#         do_list()
+    running = True
+    file = ''
+    while running:
+        args = input("\n Please type \'enroll\' or \'e\' to enroll a new user,\n  type \'verify\' or \'v\' to verify an enrolled user:").lower()
+        print()
+        if args == 'enroll' or args == 'e':
+            username = input(" Please type your username:") #args.username
+            do_enroll(username, file)#args.file)
+            running = False
 
-    elif args.enroll:
-        username = args.username
-        do_enroll(username, args.file)
-        
-    elif args.verify:
-        username = args.username
-        do_verify(username, args.file)
-        
+        elif args == 'verify' or args =='v':
+    #         username = args.username
+            do_verify(file)#args.file)
+            running = False
 
-    elif args.identify:
-        do_identify(args.file)
+    #     elif args.identify:
+    #         do_identify(args.file)
 
-    elif args.delete:
-        username = args.username
-        do_delete(username)
+        elif args == 'd' or args == 'delete':
+            username = input(" Please type username to delete:")
+            do_delete(username)
+            running = False
 
+        elif args == 'c' or args == 'clear':
+            clear_database()
+            
+        elif args == 'f' or args == 'file':
+            file = input(' Please input file path:')
 
-    elif args.clear:
-        clear_database()
-
-    else:
-        users_list = show_current_users()
-        if not users_list:
-            print("No users found")
         else:
-            print("\n".join(users_list))
+            print(' Please enter "e" or "v".')
+#         users_list = show_current_users()
+#         if not users_list:
+#             print("No users found")
+#         else:
+#             print("\n".join(users_list))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,9 @@
 SERVER = False
 import os
 
+import warnings
+warnings.filterwarnings('ignore')
+
 ROOT_DIR = ""
 CHECKPOINTS_FOLDER = "checkpoints"
 
@@ -9,12 +12,13 @@ CHECKPOINTS_FOLDER = "checkpoints"
 TOTAL_USERS = 100
 CLIPS_PER_USER = 15 #15 #15
 MIN_CLIP_DURATION = 2 #5 #2 #3
-NUM_NEW_CLIPS = 5
+NUM_NEW_CLIPS = 2
 TRAIN_PAIR_SAMPLES = None #1000
 
 # ML_Part
 DISTANCE_METRIC = "cosine"
-THRESHOLD = 0.95 # 0.8
+C_THRESHOLD = THRESHOLD = 0.995 # 0.8 # similarity should be larger than
+E_THRESHOLD = 3 #distance should be less than
 LEARNING_RATE = 1e-3 #5e-4
 N_EPOCHS = 1 #30
 BATCH_SIZE = 32
@@ -46,17 +50,26 @@ BACKGROUND_LIST_PATH = 'datasets/bg_noises.txt'
 
 
 ####### For each Test data ###############
-TEST_STFT_FOLDER = 'omic_stft_{}s'.format(int(MIN_CLIP_DURATION))#'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
-TEST_PAIRS_FILE ='omic_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION)) #'test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
-TEST_PATH = 'datasets/omic'#'../../LibriSpeech/test-other'
-TEST_CLIPS_LIST_FILE = 'omic_clips_list'#'test_clips_list.txt'
+# TEST_STFT_FOLDER = 'omic_stft_{}s'.format(int(MIN_CLIP_DURATION))
+TEST_STFT_FOLDER = 'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
+# TEST_PAIRS_FILE ='omic_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION)) 
+TEST_PAIRS_FILE ='test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
+# TEST_PATH = 'datasets/omic'
+TEST_PATH ='../../LibriSpeech/test-other'
+# TEST_CLIPS_LIST_FILE = 'omic_clips_list'
+TEST_CLIPS_LIST_FILE ='test_clips_list.txt'
 TEST_CLIPS_PER_USER = None #(None means max - clips all audio files)
 
 #recording parameters
 import pyaudio
 CHUNK = 1024 #1024
 FORMAT = pyaudio.paInt16
-CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] #2
+try:
+    CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] 
+    #2
+except:
+    print("No sound channel configured. Set CHANNEL = 1")
+    CHANNELS = 1
 RATE = 16000 # 44100
 EXTRA_SECONDS = 2.0
 RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
@@ -79,12 +92,11 @@ VERIFY_RECORDING_FNAME = "veri_recording" #"verify_user_recording.wav"
 IDENTIFY_RECORDING_FNAME = "iden_recording" #"identify_user_recording.wav"
     # MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
+SPEAKER_PHRASES_FILE = 'speaker_phrases.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
 VERIFICATION_FOLDER = "tested_users"
 
 NOISE_DURATION_FROM_FILE = 2 #(seconds)
-
-
 
 
 
@@ -117,7 +129,7 @@ import pandas as pd
 from scipy.io import loadmat
 import scipy
 import sklearn
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.manifold import TSNE
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support as score
@@ -132,6 +144,10 @@ import matplotlib.pyplot as plt
 # %matplotlib inline
 # import seaborn as sns
 
+#Voice-to-text
+from difflib import SequenceMatcher
+from deepspeech import Model#, printVersions
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -141,14 +157,14 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 from torch.utils.checkpoint import checkpoint
 
-if not os.path.exists(STFT_FOLDER):
-    os.mkdir(STFT_FOLDER)
+# if not os.path.exists(STFT_FOLDER):
+#     os.mkdir(STFT_FOLDER)
 
-if not os.path.exists(TEST_STFT_FOLDER):
-    os.mkdir(TEST_STFT_FOLDER)
+# if not os.path.exists(TEST_STFT_FOLDER):
+#     os.mkdir(TEST_STFT_FOLDER)
     
-if not os.path.exists(CHECKPOINTS_FOLDER):
-    os.mkdir(CHECKPOINTS_FOLDER)
+# if not os.path.exists(CHECKPOINTS_FOLDER):
+#     os.mkdir(CHECKPOINTS_FOLDER)
 
 if not os.path.exists(ENROLLMENT_FOLDER):
     os.mkdir(ENROLLMENT_FOLDER)
@@ -252,6 +268,37 @@ def save_checkpoint(state, loss):
     print("$$$ Saved a new checkpoint\n")
 
 
+#####################Voice-To-Text##############
+    
+#######Deepspeech Voice-To-Text Parameters########
+
+DS_model_file_path = 'deepspeech_data/deepspeech-0.7.0-models.pbmm'
+beam_width = 500
+DS_model = Model(DS_model_file_path)
+DS_model.setBeamWidth(beam_width)
+DS_model.enableExternalScorer('deepspeech_data/deepspeech-0.7.0-models.scorer') 
+
+
+    
+def get_text(data, model = DS_model):
+#     y , s = librosa.load(fpath, sr=16000)
+    y = (data* 32767).astype('int16')
+    text = model.stt(y)
+    return text    
+    
+def get_text_score(phrase1, phrase2):
+    return SequenceMatcher(a= phrase1, b= phrase2).ratio()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#############Voice-Recognition, Recording############    
+    
 def record(fpath, enroll = False):
     CHUNK = 1024 #2048 #1024
     FORMAT = pyaudio.paInt16
@@ -507,28 +554,36 @@ def removeNoise(
 
 
 
-def record_and_denoise( enroll = False):    
+def record_and_denoise( enroll = False, phrase = ''):    
     p = pyaudio.PyAudio()
 
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
-
+    
+#     LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
 
     
+#     print("\n Speak the following sentence for recording: \n {}\n".format(LONG_STRING))
+    print()
     
-    
-    LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
-
-    print(" Recording {} seconds".format(RECORD_SECONDS - EXTRA_SECONDS))
-    print("\n Speak the following sentence for recording: \n {}\n".format(LONG_STRING))
-
-    print(' or\n')
-    print(' You can speak your own secret phrases.')
+#     print(' or\n')
+#     print(' You can speak your own secret phrases.')
     if enroll:
-        print(' If you do so, please let us know your secret phrases:)\n\n')
+        if phrase:
+            LONG_STRING = phrase
+        else:
+            LONG_STRING = '(Your phrase will be detected automatically)'
+        print(" Speak your secret phrase for recording: \n {}\n".format(LONG_STRING))
+
+#         print(' If you do so, please let us know your secret phrases:)\n\n')
     else: 
-        print('\n')
-    print(" Recording starts in soon...\n")
+        print(" Speak your secret phrase:\n")
+
+    
+    print(" Recording {} seconds \n".format(RECORD_SECONDS - EXTRA_SECONDS))   
+    
+    if enroll:input(' Ready to start? (press enter)')
+    else: print(" Recording starts soon...\n")#time.sleep(1)
     
     frames_bg = []
     for i in range(0, int(RATE / CHUNK * (BACKGROUND_RECORD_SECONDS+1) ) ):
@@ -541,8 +596,7 @@ def record_and_denoise( enroll = False):
 
     
     
-    if enroll:input(' Ready to start? (press enter)')
-    else: pass#time.sleep(1)
+
     
     p = pyaudio.PyAudio()
 
@@ -550,7 +604,7 @@ def record_and_denoise( enroll = False):
                     input=True, frames_per_buffer=CHUNK)
 
 
-
+ 
     print(" Recording starts in 3 second...")
     time.sleep(2)   # start 1 second earlier
     frames = []
