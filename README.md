@@ -1,4 +1,4 @@
-# membrane
+# Membrane 2.0
 
 Rapid voice-based biometric authentication.
 
