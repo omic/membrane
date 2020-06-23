@@ -18,7 +18,7 @@ TRAIN_PAIR_SAMPLES = None #1000
 # ML_Part
 DISTANCE_METRIC = "cosine"
 C_THRESHOLD = THRESHOLD = 0.995 # 0.8 # similarity should be larger than
-E_THRESHOLD = 3 #distance should be less than
+E_THRESHOLD = 2 #distance should be less than
 LEARNING_RATE = 1e-3 #5e-4
 N_EPOCHS = 1 #30
 BATCH_SIZE = 32
@@ -157,14 +157,14 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 from torch.utils.checkpoint import checkpoint
 
-# if not os.path.exists(STFT_FOLDER):
-#     os.mkdir(STFT_FOLDER)
+if not os.path.exists(STFT_FOLDER):
+    os.mkdir(STFT_FOLDER)
 
-# if not os.path.exists(TEST_STFT_FOLDER):
-#     os.mkdir(TEST_STFT_FOLDER)
+if not os.path.exists(TEST_STFT_FOLDER):
+    os.mkdir(TEST_STFT_FOLDER)
     
-# if not os.path.exists(CHECKPOINTS_FOLDER):
-#     os.mkdir(CHECKPOINTS_FOLDER)
+if not os.path.exists(CHECKPOINTS_FOLDER):
+    os.mkdir(CHECKPOINTS_FOLDER)
 
 if not os.path.exists(ENROLLMENT_FOLDER):
     os.mkdir(ENROLLMENT_FOLDER)
