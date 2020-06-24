@@ -16,7 +16,7 @@ toy_modelv1/
 **/*docker*/
 **/*streamlit*/
 # **/*_st.py
-
+backup/
 
 # locally working files
 realtime.py
@@ -26,6 +26,8 @@ modelv2/speaker_models.pkl
 modelv2/speaker_phrases.pkl
 modelv2/Dockerfile
 
+
+audio_file_test.ipynb
 # Docker files
 #**Dockerfile
 #**.dockerignore
