@@ -6,6 +6,8 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Contributor**: [Jun Seok Lee](lee.junseok39@gmail.com).
 
+**Deployed testing environment**:  http://membrane.insightai.me/.
+
 ## TODO
 
 - [ ] Jun registers for [OS](os.omic.ai).
