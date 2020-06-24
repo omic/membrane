@@ -1,6 +1,6 @@
-# Membrane
+# Membrane 2.0
+Rapid Voice-Based Biometric Authentication Project with OMIC
 
-Rapid voice-based biometric authentication.
 
 We have a web-based biomedical/AI platform used for open-source COVID-19 research. Users currently log in via magic link, but we would like to add an option where the person is identified via voice through the browser. Ideally we would generate a phrase for the user to speak into a laptop/PC microphone, at which time the user would be rapidly authenticated and would be granted access.
 
@@ -69,11 +69,9 @@ Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoint_202006
 
 We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
 
-<<<<<<< HEAD
+
 As an example, we could provide several training phrases for the user to speak in our application through the laptop microphone. We would record these phrases, then provide a new login phrase for them to read and log in. The person’s voice would need to be isolated from background noise.
-=======
-As an example, we could provide several training phrases for the user to speak in our application through the laptop microphone. We would record these phrases, then provide a new login phrase for them to read and log in. The person’s voice would need to be isolated from background noise.
->>>>>>> e3405d867fc66741bcbe209c2e8136088f7ff41e
+
 
 The model would score the new login phrase - identifying the person of closest match and false positive/negative (precision/recall) data for understanding false positive and negative rates. The goal would be for these to score at least as well as common voice recognition models that currently exist.
 
@@ -107,3 +105,4 @@ TODO
 ### Tier 4 (Boss Level)
 
 Collect and package all references and results.  Publish a paper in a top journal.  Save the princess.
+
