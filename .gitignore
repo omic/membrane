@@ -13,6 +13,7 @@ modelv2/deepspeech_data/
 modelv2/*stft*/
 modelv2/*docker*/
 toy_modelv1/
+vggvox1/
 **/*docker*/
 **/*streamlit*/
 # **/*_st.py
