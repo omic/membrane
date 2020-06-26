@@ -5,19 +5,20 @@ modelv2/checkpoints/
 modelv2/local_work/
 modelv2/recordings/
 modelv2/stft*/
-modelv2/__pycache__/
-modelv2/.ipynb_checkpoints/
+**/__pycache__/
+**/.ipynb_checkpoints/
 modelv2/datasets/
 modelv2/audio/
 modelv2/deepspeech_data/
 modelv2/*stft*/
 modelv2/*docker*/
-toy_modelv1/
+# toy_modelv1/
 vggvox1/
 **/*docker*/
 **/*streamlit*/
 # **/*_st.py
 backup/
+
 
 # locally working files
 realtime.py

@@ -10,14 +10,14 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 ## TODO
 
-- [ ] Jun registers for [OS](os.omic.ai).
+- [x] Jun registers for [OS](os.omic.ai).
 - [x] Jun signs Nondisclosure Agreement.
-- [ ] Profiling visualization dataset created -- 200 samples.
-- [ ] Training visualization dataset created -- 1K+ samples.
+- [x] Profiling visualization dataset created -- 200 samples.
+- [x] Training visualization dataset created -- 1K+ samples.
 
-## Background
+<!-- ## Background
 
-TODO
+TODO -->
 
 ## Data
 
@@ -53,7 +53,9 @@ for
 
 ### Structure
 
-TODO
+```toy_modelv1``` : Path for the first version toy-model.
+
+```modelv2``` : Main Membrane 2.0 model.
 
 ### Privacy
 
@@ -65,7 +67,7 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Model
 
-Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoint_20200604-112741_0.00098080572206527.pth.tar.
+Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoint/
 
 We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
 
@@ -77,7 +79,7 @@ The model would score the new login phrase - identifying the person of closest m
 
 ### Tier 1
 
-vggvox1 - Toy Model
+Toy Model
 
 Pre-trained model by VoxCeleb1 dataset.
 
@@ -96,11 +98,56 @@ python3 verification.py verify --input data/wav/enroll/19-enroll.wav --test data
 
 ### Tier 2
 
-TODO
+VBBA - Voice-Based Biometric Authetication.
+
+Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
+
+* Install python3 and the required packages
+* To run:
+```
+python3 VBBA.py (optional argument)
+```
+```
+(optional arguments):
+  -h, --help            show this help message and exit
+  -l, --list-current-users
+                        Show current enrolled users
+  -e, --enroll          Enroll a new user
+  -v, --verify          Verify a user from the ones in the database
+  -i, --identify        Identify a user
+  -d, --delete          Delete user from database
+  -c, --clear           Clear Database
+  -u, --username        USERNAME
+  -f, --with-file       Provide a recording file rather than record
+```
+* Results will be stored in `speaker_models.pkl`. More details in `/modelv2/README.md`.
 
 ### Tier 3
 
-TODO
+membrane - Speech-to-Text Identification and Voice-Based Biometric Authentication
+
+* Install python3 and the required packages
+* To run:
+
+```
+python3 membrane.py
+```
+Instructions follow on user's terminal.
+
+Public mode (showed in the terminal instructions):
+```enroll or e``` : Enroll a user (command line input follows)
+
+```verify or v``` : Verify a user
+
+Administrator mode (showed in the terminal instructions):
+```delete or d``` : Delete a user (command line input follows)
+
+```clear or c``` : Clear all users
+
+```file or f```: Use an existing file instead of the streaming recorder (command line input follows)
+
+* Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`. More details in `/modelv2/README.md`.
+
 
 ### Tier 4 (Boss Level)
 

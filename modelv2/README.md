@@ -1,22 +1,67 @@
-# vggvox
+# Membrane 2.0
+
+## Data
+### vggvox
 
 * Python adaptation of VGGVox speaker identification model, based on Nagrani et al 2017, "[VoxCeleb: a large-scale speaker identification dataset](https://arxiv.org/pdf/1706.08612.pdf)"
 
-# Additional Data
-Free ST American English Corpus
+<!-- ## Additional Data -->
+### Free ST American English Corpus
 
 Source: http://www.openslr.org/resources/45/ST-AEDS-20180100_1-OS.tgz
 
-Extract into /wav_train_subset
 
-Move some subset of data of test users into /wav_test_subset
 
 ## Instructions
-* Install python3 and the required packages
+* Install python3 and the required packages.
+* For hyperparameters and global constants, check `utils.py`
 * To run:
 
 
+
+### membrane.py (Speech-to-Text Identification and Voice-Based Biometric Authentication)
+Extract training data into `/datasets/`
+
+```
+python3 membrane.py
+```
+Instructions follow on user's terminal, i.e.
+```
+input("\n Please type \'enroll\' or \'e\' to enroll a new user,\n  type \'verify\' or \'v\' to verify an enrolled user:"
+```
+
+Public mode (showed in the terminal instructions):
+`enroll or e` : Enroll a user (command line input follows)
+
+```
+input(" Please type your username:")
+```
+
+`verify or v` : Verify a user
+
+Administrator mode (showed in the terminal instructions):
+`delete or d` : Delete a user (command line input follows)
+```
+input(" Please type username to delete:")
+```
+
+`clear or c` : Clear all users
+
+`file or f`: Use an existing file instead of the streaming recorder (command line input follows)
+```
+input(' Please input file path:')
+```
+
+
+* Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
+
+
 ### VBBA.py (Voice-Based Biometric Authentication)
+
+Extract training data into `/wav_train_subset`
+
+Move some subset of data of test users into `/wav_test_subset`
+
 ```
 python3 VBBA.py (optional argument)
 ```
@@ -56,6 +101,7 @@ python3 VBBA.py -i -f recordings/John_Doe_1.mp3   # Detect and identify the reco
 python3 VBBA.py -l   # Display enrolled users.
 ```
 
+* Results will be stored in `speaker_models.pkl`.
 
 ### Train
 ```
