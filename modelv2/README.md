@@ -33,11 +33,15 @@ Instructions follow on user's terminal, i.e.
 
 - **Public mode** (shown in the terminal instructions):
 
-```enroll or e```
+```
+enroll or e
+```
 
 : Enroll a user (command line input follows) -- *`"Please type your username:"`*
 
-```verify or v```
+```
+verify or v
+```
 
 : Verify a user
 
@@ -45,15 +49,21 @@ Instructions follow on user's terminal, i.e.
 
 - **Administrator mode** (not shown in the terminal instructions):
 
-```delete or d```
+```
+delete or d
+```
 
 : Delete a user (command line input follows) -- *`"Please type username to delete:"`*
 
-```clear or c```
+```
+clear or c
+```
 
 : Clear all users
 
-```file or f```
+```
+file or f
+```
 
 : Use an existing file instead of the streaming recorder (command line input follows) -- *`'Please input file path:'`*
 
