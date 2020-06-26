@@ -127,22 +127,48 @@ Speech-to-Text Identification and Voice-Based Biometric Authentication
 * Install python3 and the required packages
 * To run:
 
+
 ```
 python3 membrane.py
 ```
 Instructions follow on user's terminal.
 
-Public mode (showed in the terminal instructions):
-```enroll or e``` : Enroll a user (command line input follows)
 
-```verify or v``` : Verify a user
+<!-- --------------------------------------- -->
 
-Administrator mode (showed in the terminal instructions):
-```delete or d``` : Delete a user (command line input follows)
+- **Public mode** (shown in the terminal instructions):
 
-```clear or c``` : Clear all users
+`
+enroll or e
+`
+: Enroll a user (command line input follows)
 
-```file or f```: Use an existing file instead of the streaming recorder (command line input follows)
+`
+verify or v
+`
+: Verify a user
+
+<!-- --------------------------------------- -->
+
+- **Administrator mode** (not shown in the terminal instructions):
+
+`
+delete or d
+`
+: Delete a user (command line input follows)
+
+`
+clear or c
+`
+: Clear all users
+
+`
+file or f
+`
+: Use an existing file instead of the streaming recorder (command line input follows)
+
+<!-- --------------------------------------- -->
+
 
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`. More details in `/modelv2/README.md`.
 
