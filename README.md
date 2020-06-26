@@ -23,7 +23,7 @@ TODO -->
 
 There are a plethora of voice identification and transcription datasets publicly available, including FSDD, VoxCeleb, CommonVoice, LibreSpeech, etc.  These existing datasets will require transfer learning and need to (optimistically) go through various real-world transformations to match production environments, which primarily include non-linear speech cadence/stuttering/filler words and static/dynamic environment background noise.  In total, the datasets accumulate to over 2TB.
 
-### VGGVOX
+### VGGVox
 - An audio-visual dataset consisting of short clips (\~5s) of human speech, extracted from interview videos uploaded to YouTube
 
 [VoxCeleb1](http://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1.html) - 1251 speakers, 153,516 utterances, ~ 45 GB
