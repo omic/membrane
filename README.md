@@ -53,9 +53,9 @@ for
 
 ### Structure
 
-```toy_modelv1``` : Path for the first version toy-model.
+```/toy_modelv1/``` : Path for the first version toy-model.
 
-```modelv2``` : Main Membrane 2.0 model.
+```/modelv2/``` : Main Membrane 2.0 model.
 
 ### Privacy
 
@@ -77,9 +77,7 @@ As an example, we could provide several training phrases for the user to speak i
 
 The model would score the new login phrase - identifying the person of closest match and false positive/negative (precision/recall) data for understanding false positive and negative rates. The goal would be for these to score at least as well as common voice recognition models that currently exist.
 
-### Tier 1
-
-- Toy Model
+### Tier 1 - Toy Model
 
 Pre-trained model by VoxCeleb1 dataset.
 
@@ -96,9 +94,9 @@ python3 verification.py verify --input data/wav/enroll/19-enroll.wav --test data
 
 
 
-### Tier 2
+### Tier 2 - VBBA
 
-- VBBA - Voice-Based Biometric Authetication.
+Voice-Based Biometric Authetication.
 
 Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
 
@@ -122,9 +120,9 @@ python3 VBBA.py (optional argument)
 ```
 * Results will be stored in `speaker_models.pkl`. More details in `/modelv2/README.md`.
 
-### Tier 3
+### Tier 3 - Membrane
 
-- Membrane - Speech-to-Text Identification and Voice-Based Biometric Authentication
+Speech-to-Text Identification and Voice-Based Biometric Authentication
 
 * Install python3 and the required packages
 * To run:
