@@ -79,7 +79,7 @@ The model would score the new login phrase - identifying the person of closest m
 
 ### Tier 1
 
-Toy Model
+- Toy Model
 
 Pre-trained model by VoxCeleb1 dataset.
 
@@ -98,7 +98,7 @@ python3 verification.py verify --input data/wav/enroll/19-enroll.wav --test data
 
 ### Tier 2
 
-VBBA - Voice-Based Biometric Authetication.
+- VBBA - Voice-Based Biometric Authetication.
 
 Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
 
@@ -124,7 +124,7 @@ python3 VBBA.py (optional argument)
 
 ### Tier 3
 
-membrane - Speech-to-Text Identification and Voice-Based Biometric Authentication
+- Membrane - Speech-to-Text Identification and Voice-Based Biometric Authentication
 
 * Install python3 and the required packages
 * To run:
