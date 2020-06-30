@@ -29,11 +29,13 @@ RUN python -m pip --version
 WORKDIR  /usr/membrane/src/
 
 # Installing python dependencies
-COPY docker/requirements.txt .
+# COPY docker/requirements.txt .
+COPY modelv2/requirements.txt .
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
 # Copy all the files from the project’s root to the working directory
-COPY docker/. /usr/membrane/src/
+# COPY docker/. /usr/membrane/src/
+COPY modelv2/. /usr/membrane/src/
 RUN ls -la /usr/membrane/src/*
 
 # Running Python Application
