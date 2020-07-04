@@ -17,7 +17,16 @@ vggvox1/
 **/*docker*/
 **/*streamlit*/
 # **/*_st.py
-backup/
+**backup*/
+OS_deployment/
+
+# note files
+**.txt
+! modelv2/requirements.txt
+
+
+# AWS specific file
+**/setupec2.sh
 
 
 # locally working files
