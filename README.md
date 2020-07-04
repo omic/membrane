@@ -97,7 +97,7 @@ python3 verification.py verify --input data/wav/enroll/19-enroll.wav --test data
 ```
 * Results will be stored in `res/results.csv`. Each line has format: `[input file name], [test file name], [metric function], [distance], [threshold], [verified?]`
 
-
+---------------------------------------
 
 ### Tier 2 - VBBA
 
@@ -106,6 +106,8 @@ Voice-Based Biometric Authetication.
 Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
 
 * Install python3 and the required packages
+* Extract training data into `/wav_train_subset`
+* Move some subset of data of test users into `/wav_test_subset`
 * To run:
 ```
 python3 VBBA.py (optional argument)
@@ -123,60 +125,76 @@ python3 VBBA.py (optional argument)
   -u, --username        USERNAME
   -f, --with-file       Provide a recording file rather than record
 ```
-* Results will be stored in `speaker_models.pkl`. More details in `/modelv2/README.md`.
+* Results will be stored in `speaker_models.pkl`.
+* More details in `model/modelv2/README.md`.
+
+---------------------------------------
 
 ### Tier 3 - Membrane
-
+**Command Line Model**
 Speech-to-Text Identification and Voice-Based Biometric Authentication
 
 * Install python3 and the required packages
+* For hyperparameters and global constants, check `utils.py`
+* Extract training data into `/datasets/`
 * To run:
 
 
 ```
 python3 membrane.py
 ```
-Instructions follow on user's terminal.
+Instructions follow on user's terminal, i.e.
 
+--*`"Please type 'enroll' or 'e' to enroll a new user, type 'verify' or 'v' to verify an enrolled user:"`*
 
 <!-- --------------------------------------- -->
 
 - **Public mode** (shown in the terminal instructions):
 
-`
+```
 enroll or e
-`
-: Enroll a user (command line input follows)
+```
 
-`
+: Enroll a user (command line input follows) -- *`"Please type your username:"`*
+
+```
 verify or v
-`
+```
+
 : Verify a user
 
 <!-- --------------------------------------- -->
 
 - **Administrator mode** (not shown in the terminal instructions):
 
-`
+```
 delete or d
-`
-: Delete a user (command line input follows)
+```
 
-`
+: Delete a user (command line input follows) -- *`"Please type username to delete:"`*
+
+```
 clear or c
-`
+```
+
 : Clear all users
 
-`
+```
 file or f
-`
-: Use an existing file instead of the streaming recorder (command line input follows)
+```
+
+: Use an existing file instead of the streaming recorder (command line input follows) -- *`'Please input file path:'`*
 
 <!-- --------------------------------------- -->
 
 
-* Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`. More details in `/modelv2/README.md`.
+* Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
 
+---------------------------------------
+**OS Deployment**
+TODO
+
+---------------------------------------
 
 ### Tier 4 (Boss Level)
 
