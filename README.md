@@ -58,9 +58,9 @@ for
 
 ### Structure
 
-```/toy_modelv1/``` : Path for the first version toy-model.
+```model/toy_modelv1/``` : Path for the first version toy-model.
 
-```/modelv2/``` : Main Membrane 2.0 model.
+```model/modelv2/``` : Main Membrane 2.0 model.
 
 ### Privacy
 
