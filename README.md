@@ -22,6 +22,7 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 - https://github.com/wq2012/awesome-diarization
 - https://voiceit.io/
 - https://github.com/resemble-ai/Resemblyzer
+- https://github.com/timsainb/noisereduce
 
 ## Data
 
