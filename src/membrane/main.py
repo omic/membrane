@@ -10,13 +10,21 @@ from network import *
 C_THRESHOLD = THRESHOLD = 0.99 # 0.8 # similarity should be larger than
 E_THRESHOLD = 3 #distance should be less than
 
+# When ASR couldn't find the username try only using voice verification with strict thresholds
+C_THRESHOLD_STRICT  = 0.999 # 0.8 # similarity should be larger than
+E_THRESHOLD_STRICT = 2 #distance should be less than
+# On my test set these thresholds give less than 0.4% False Positive Rate, but about <20% verification rate though.
+
 #############Voice-To-Text#############
 
 
 def identify_user_by_phrase(data):
     phrase = get_text(data)
     speaker_phrases = load_speaker_phrases()
-    max_idx = np.argmax(list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
+    scores = list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values()))
+    max_idx = np.argmax(scores)
+    if scores[max_idx] < 0.6:
+        return False
 #     print('phrase scores:',list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
     matched_user = list(speaker_phrases)[max_idx]
     return matched_user
@@ -80,11 +88,25 @@ def verify_user( file = ''):
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
     username = identify_user_by_phrase(denoised_data)
-    c_score = cosine_similarity(emb, speaker_models[username])
-    E_dist = euclidean_distances(emb, speaker_models[username])
-#     print('cosine distance: ',c_score)
-#     print('Euclidean distance: ',E_dist)
-    return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , username, denoised_data  # ,denoised_data, fpath
+    #TODO speaker_models will have more than 1 enrollment per user with env variable.
+    if username == False:
+        c_score_with_all = [(other_user, cosine_similarity(emb, speaker_models[other_user]))
+            for other_user in speaker_models]
+        E_dist_with_all = [(other_user, euclidean_distances(emb, speaker_models[other_user]))
+            for other_user in speaker_models]
+        username_by_C, max_C_similarity = max(c_score_with_all, key=lambda x:x[1])
+        username_by_E, min_E_distance = min(E_dist_with_all, key=lambda x:x[1])
+        if username_by_C == username_by_E and max_C_similarity > C_THRESHOLD_STRICT and\
+                min_E_distance < E_THRESHOLD_STRICT:
+            return True, username_C, denoised_data
+        else:
+            return False, _, _
+    else:
+        c_score = cosine_similarity(emb, speaker_models[username])
+        E_dist = euclidean_distances(emb, speaker_models[username])
+    #     print('cosine distance: ',c_score)
+    #     print('Euclidean distance: ',E_dist)
+        return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , username, denoised_data  # ,denoised_data, fpath
 
 
 # def fname_numbering(fpath):
