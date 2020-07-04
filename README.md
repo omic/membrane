@@ -15,9 +15,13 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 - [x] Profiling visualization dataset created -- 200 samples.
 - [x] Training visualization dataset created -- 1K+ samples.
 
-<!-- ## Background
-
-TODO -->
+## Background
+- https://github.com/CorentinJ/Real-Time-Voice-Cloning
+- https://github.com/mozilla/DeepSpeech
+- https://github.com/Janghyun1230/Speaker_Verification
+- https://github.com/wq2012/awesome-diarization
+- https://voiceit.io/
+- https://github.com/resemble-ai/Resemblyzer
 
 ## Data
 

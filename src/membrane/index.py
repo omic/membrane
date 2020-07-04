@@ -21,6 +21,8 @@ Ideal project structure:
                 index.json
                 samples/
                     ...
+
+Existing demo is here:  http://34.211.144.112:8501/.
 """
 
 import json
@@ -28,49 +30,10 @@ import subprocess
 
 from flask import Flask, request, jsonify
 
-from membrane import *
+import membrane.main as membrane
+import util
 
 app = Flask(__name__)
-
-############## READING and WRITING functions ##########################
-########## Let me use my pre-defined functions below
-########## Feel free to amend!
-#
-#
-# # TODO:  Start storing this data in S3, not the EC2.
-# INDEX_PATH = '~/membrane/users/index.json'
-# SAMPLE_PATH = '~/membrane/users/samples'
-
-# def _read_db(email: str) -> dict:
-#     """Get user phrase and location to all samples files pertaining
-#     to this user.
-#     """
-#     try:
-#         with open(INDEX_PATH, 'rt') as user_index:
-#             idx = json.load(user_index)
-#             entry = idx[email]
-#             # TODO:  Return filenames and secret phrase for user with this
-#             #        email
-#     except:
-#         return None
-
-# def _write_db(email: str, phrase: str = None, sample: bytes = None) -> None:
-#     """Write either phrase or new sample to user entry in index."""
-#     if sample:
-#         # TODO:  Write to SAMPLE_PATH and get path to file.
-#         sample_path = '...'
-#     with open(INDEX_PATH, 'rt+') as user_index:
-#         idx = json.load(user_index)
-#         entry = {}
-#         if sample_path:
-#             # TODO:  Update sample path to entry.
-#             pass
-#         if phrase:
-#             # TODO:  Add phrase to entry.
-#             pass
-#         json.dump(idx, user_index)
-############
-
 
 # FILE and FOLDER PATH variables defined in utils.py
 # Copied here
@@ -78,7 +41,6 @@ SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 SPEAKER_PHRASES_FILE = 'speaker_phrases.pkl'
 ENROLLMENT_FOLDER = "enrolled_users" #to save enrolled audio samples (not neccessary)
 VERIFICATION_FOLDER = "tested_users" #to save tested audio samples (not neccessary)
-
 
 # TODO:  Start storing this data in S3, not the EC2.
 S3_SERVER = True
@@ -234,29 +196,37 @@ def enroll():
     """Train new user.
     
     params: {
-        email: ""
+        'email': '',
+        'mode': 'append|write'
+        'env': 0
+        'phrase': ''
     }
     payload = [byte stream] 
     """
     # Extract fields from payload
-    username = request.args.get('email')
+    email = request.args['email']
+    phrase = request.args.get('phrase', gen_rando_phrase())
+    mode = request.args.get('mode', 'write')
+    env = request.args.get('env')
     blob = request.files['file'].read()
-
-    # TODO: Depending on the default returned type of username
-    # while username is not None: 
-    #     username = '...' # TODO: UX - (get emailaddress)
-    #     # TODO: UX - print('Enter Valid Username')
-
-    if username in show_current_users():
-        # TODO: UX print('Username already exists in database.')
-        var = '...' # TODO: UX var = input('Do you want to replace? (y/n):')
-        if var == 'y' or var =='yes':
+    if email in show_current_users():
+        if mode == 'write':
+            # Overwrite existing user 
+            pass
+        elif mode == 'append':
+            # TODO:  Append sample.
+            # enroll_existing_user(username, phrase)
             pass
         else:
-            return
-    phrase = '' #TODO: UX - input('Enter your secret phrase (leave blank for auto detection):')
+            raise ValueError(f'Invalid mode {mode}.')
+    # TODO:  Ensure `env` doesn't already exist.
+    # TODO:  num_samples
     enroll_new_user(username, phrase)
-
+    jsonify(
+        email=email,
+        phrase=phrase,
+        num_samples=num_samples
+    )
 
 # Liftoff!
 if __name__ == '__main__':

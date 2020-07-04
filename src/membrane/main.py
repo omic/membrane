@@ -10,7 +10,6 @@ from network import *
 C_THRESHOLD = THRESHOLD = 0.99 # 0.8 # similarity should be larger than
 E_THRESHOLD = 3 #distance should be less than
 
-
 #############Voice-To-Text#############
 
 
@@ -136,7 +135,6 @@ def do_list():
         print("No users found")
     else:
         print("\n".join(users_list))
-
 
 def do_delete(username):
     assert username is not None, "Enter username"
