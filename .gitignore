@@ -19,6 +19,8 @@ vggvox1/
 # **/*_st.py
 **backup*/
 OS_deployment/
+src/
+
 
 # note files
 **.txt
