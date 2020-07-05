@@ -19,10 +19,12 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 - https://github.com/CorentinJ/Real-Time-Voice-Cloning
 - https://github.com/mozilla/DeepSpeech
 - https://github.com/Janghyun1230/Speaker_Verification
+- https://github.com/Dheeraj2444/speaker-identification
 - https://github.com/wq2012/awesome-diarization
 - https://voiceit.io/
 - https://github.com/resemble-ai/Resemblyzer
 - https://github.com/timsainb/noisereduce
+
 
 ## Data
 
@@ -81,6 +83,8 @@ As an example, we could provide several training phrases for the user to speak i
 
 
 The model would score the new login phrase - identifying the person of closest match and false positive/negative (precision/recall) data for understanding false positive and negative rates. The goal would be for these to score at least as well as common voice recognition models that currently exist.
+
+---------------------------------------
 
 ### Tier 1 - Toy Model
 
