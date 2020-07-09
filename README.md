@@ -63,11 +63,8 @@ for
 ```model/toy_modelv1/``` : Path for the first version toy-model.
 
 ```model/modelv2/``` : Main Membrane 2.0 model.
-<<<<<<< HEAD
 
 ```src/``` : OS deployment files. Will not be updated except initial raw files.
-=======
->>>>>>> master
 
 ### Privacy
 
