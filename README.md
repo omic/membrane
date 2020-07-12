@@ -8,12 +8,12 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Deployed testing environment**:  http://membrane.insightai.me/.
 
-## TODO
+<!-- ## TODO
 
 - [x] Jun registers for [OS](os.omic.ai).
 - [x] Jun signs Nondisclosure Agreement.
 - [x] Profiling visualization dataset created -- 200 samples.
-- [x] Training visualization dataset created -- 1K+ samples.
+- [x] Training visualization dataset created -- 1K+ samples. -->
 
 ## Background
 - https://github.com/CorentinJ/Real-Time-Voice-Cloning
@@ -64,7 +64,10 @@ for
 
 ```model/modelv2/``` : Main Membrane 2.0 model.
 
-```src/``` : OS deployment files. Will not be updated except initial raw files.
+- *Final stage files will not be updated until the project becomes public*
+
+- *Weights for modelv2 (VBBA, Membrane) will not be available until the project becomes public*
+<!-- ```src/``` : OS deployment files. Will not be updated except initial raw files. -->
 
 ### Privacy
 
@@ -76,7 +79,9 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Model
 
-Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar
+<!-- Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar -->
+
+- *Final weights will not be available until the project becomes public*
 
 We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
 
@@ -138,6 +143,7 @@ python3 VBBA.py (optional argument)
 
 ### Tier 3 - Membrane
 **Command Line Model**
+
 Speech-to-Text Identification and Voice-Based Biometric Authentication
 
 * Install python3 and the required packages
@@ -196,11 +202,12 @@ file or f
 
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
 
----------------------------------------
+
+<!-- ---------------------------------------
 **OS Deployment**
 TODO
 
----------------------------------------
+--------------------------------------- -->
 
 ### Tier 4 (Boss Level)
 
