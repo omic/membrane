@@ -8,7 +8,7 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Deployed testing environment**:  http://membrane.insightai.me/.
 
-**jun branch is the default branch. master will not be updated until the project becomes public**
+***jun* branch is the default public branch. *master* will not be updated until the project becomes public**
 
 <!-- ## TODO
 
