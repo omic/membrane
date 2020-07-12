@@ -8,6 +8,8 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Deployed testing environment**:  http://membrane.insightai.me/.
 
+**jun branch is the default branch. master will not be updated until the project becomes public**
+
 <!-- ## TODO
 
 - [x] Jun registers for [OS](os.omic.ai).
@@ -59,6 +61,7 @@ for
 ```
 
 ### Structure
+
 
 ```model/toy_modelv1/``` : Path for the first version toy-model.
 
