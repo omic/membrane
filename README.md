@@ -8,13 +8,6 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Deployed testing environment**:  http://membrane.insightai.me/.
 
-## TODO
-
-- [x] Jun registers for [OS](os.omic.ai).
-- [x] Jun signs Nondisclosure Agreement.
-- [x] Profiling visualization dataset created -- 200 samples.
-- [x] Training visualization dataset created -- 1K+ samples.
-
 ## Background
 - https://github.com/CorentinJ/Real-Time-Voice-Cloning
 - https://github.com/mozilla/DeepSpeech
