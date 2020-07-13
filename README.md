@@ -189,14 +189,3 @@ file or f
 
 
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
-
----------------------------------------
-**OS Deployment**
-TODO
-
----------------------------------------
-
-### Tier 4 (Boss Level)
-
-Collect and package all references and results.  Publish a paper in a top journal.  Save the princess.
-
