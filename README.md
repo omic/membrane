@@ -212,7 +212,7 @@ TODO
 
 --------------------------------------- -->
 
-### Tier 4 (Boss Level)
+<!-- ### Tier 4 (Boss Level)
 
-Collect and package all references and results.  Publish a paper in a top journal.  Save the princess.
+Collect and package all references and results.  Publish a paper in a top journal.  Save the princess. -->
 
