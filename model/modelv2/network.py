@@ -1,6 +1,5 @@
 from utils import *
 
-
 class VggVox(nn.Module):
     '''
     Class for CNN architecture (VGGvox)
@@ -144,8 +143,8 @@ class VoxCelebDataset(Dataset):
             self.training_users = [user for user in self.all_user_ids if user not in test_users]
         else:
             self.training_users = self.all_user_ids[: n_users]
-        
-        
+
+
         def balance_data(df):
             pairs_df = []
             for user in df.user1.unique():
@@ -156,16 +155,16 @@ class VoxCelebDataset(Dataset):
 
             pairs_df = pd.concat(pairs_df)
             return pairs_df
-        
+
         if train:
             user1_subset = pairs_file[pairs_file.user1.isin(self.training_users)]
             user2_subset = user1_subset[user1_subset.user2.isin(self.training_users)]
         else:
             user1_subset = pairs_file[~pairs_file.user1.isin(self.training_users)]
-            user2_subset = user1_subset[~user1_subset.user2.isin(self.training_users)]            
+            user2_subset = user1_subset[~user1_subset.user2.isin(self.training_users)]
 
         pairs_df = balance_data(user2_subset)
-        
+
         if train:
             assert len(pairs_df[pairs_df.user1.isin(self.training_users)]) == len(pairs_df)
             assert len(pairs_df[pairs_df.user2.isin(self.training_users)]) == len(pairs_df)

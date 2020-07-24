@@ -7,15 +7,14 @@ warnings.filterwarnings('ignore')
 ROOT_DIR = ""
 CHECKPOINTS_FOLDER = "checkpoints"
 
-
-# Data_Part
+##### Data_Part
 TOTAL_USERS = 100
 CLIPS_PER_USER = 15 #15 #15
 MIN_CLIP_DURATION = 2 #5 #2 #3
 NUM_NEW_CLIPS = 2
 TRAIN_PAIR_SAMPLES = None #1000
 
-# ML_Part
+##### ML_Part
 DISTANCE_METRIC = "cosine"
 C_THRESHOLD = THRESHOLD = 0.995 # 0.8 # similarity should be larger than
 E_THRESHOLD = 2 #distance should be less than
@@ -26,13 +25,11 @@ TRAINING_USERS = 100
 SIMILAR_PAIRS = CLIPS_PER_USER*(CLIPS_PER_USER-1)#max #None #2#20 #None for max
 DISSIMILAR_PAIRS = SIMILAR_PAIRS * 5
 
-
 ####### For both Training, Test ##########
 def find_username(fpath,splitter = '-'):
     i = fpath.rfind('/')
     return fpath[i+1:fpath.find(splitter, i)]
 #     return fpath[i+1:fpath.find('_', i)]
-
 
 ####### For each Training data ##############
 TRAIN_PATH = 'datasets/train-other-500'
@@ -48,11 +45,10 @@ W_NOISE_CHANCE = 0.8 #80% chance of white noise
 NOISE_CHANCE = 0.5 # 50% chance of putting noise
 BACKGROUND_LIST_PATH = 'datasets/bg_noises.txt'
 
-
 ####### For each Test data ###############
 # TEST_STFT_FOLDER = 'omic_stft_{}s'.format(int(MIN_CLIP_DURATION))
 TEST_STFT_FOLDER = 'test_stft_{}s'.format(int(MIN_CLIP_DURATION))
-# TEST_PAIRS_FILE ='omic_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION)) 
+# TEST_PAIRS_FILE ='omic_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 TEST_PAIRS_FILE ='test_pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 # TEST_PATH = 'datasets/omic'
 TEST_PATH ='../../LibriSpeech/test-other'
@@ -60,12 +56,12 @@ TEST_PATH ='../../LibriSpeech/test-other'
 TEST_CLIPS_LIST_FILE ='test_clips_list.txt'
 TEST_CLIPS_PER_USER = None #(None means max - clips all audio files)
 
-#recording parameters
+#####recording parameters
 import pyaudio
 CHUNK = 1024 #1024
 FORMAT = pyaudio.paInt16
 try:
-    CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels'] 
+    CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels']
     #2
 except:
     print("No sound channel configured. Set CHANNEL = 1")
@@ -75,34 +71,24 @@ EXTRA_SECONDS = 2.0
 RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
 BACKGROUND_RECORD_SECONDS = 3
 
-
-
-# For recorder.py
+##### For recorder.py
 RECORDING_PATH = "recordings"
 RECORDING_STFT_FOLDER = os.path.join(RECORDING_PATH,'stft')#RECORDING_PATH + '/'+'stft'
 
-
-# Files and Directories
+##### Files and Directories
 VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
 
-
-# VBBA.py
+##### VBBA.py
 ENROLL_RECORDING_FNAME = "enroll_recording"#.wav
 VERIFY_RECORDING_FNAME = "veri_recording" #"verify_user_recording.wav"
 IDENTIFY_RECORDING_FNAME = "iden_recording" #"identify_user_recording.wav"
-    # MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
+# MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 SPEAKER_PHRASES_FILE = 'speaker_phrases.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
 VERIFICATION_FOLDER = "tested_users"
 
 NOISE_DURATION_FROM_FILE = 2 #(seconds)
-
-
-
-
-
-# PAIRS_FILE = 'pairs.csv'
 
 
 assert SIMILAR_PAIRS <= CLIPS_PER_USER * (CLIPS_PER_USER - 1)
@@ -144,7 +130,7 @@ import matplotlib.pyplot as plt
 # %matplotlib inline
 # import seaborn as sns
 
-#Voice-to-text
+#####Voice-to-text
 from difflib import SequenceMatcher
 from deepspeech import Model#, printVersions
 
@@ -162,7 +148,7 @@ if not os.path.exists(STFT_FOLDER):
 
 if not os.path.exists(TEST_STFT_FOLDER):
     os.mkdir(TEST_STFT_FOLDER)
-    
+
 if not os.path.exists(CHECKPOINTS_FOLDER):
     os.mkdir(CHECKPOINTS_FOLDER)
 
@@ -181,66 +167,23 @@ def get_rel_path(path, server=SERVER, root_dir=ROOT_DIR):
     else:
         return path
 
-
-def wavPlayer(filepath):
-    src = """
-    <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Simple Test</title>
-    </head>
-
-    <body>
-    <audio controls="controls" style="width:600px" >
-      <source src="%s" type="audio/wav" />
-      Your browser does not support the audio element.
-    </audio>
-    </body>
-    """%(filepath)
-    display(HTML(src))
-
-# in dataprepocessing
-# def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION):
-#     all_x = []
-#     all_sr = []
-#     for path in tqdm(clip_list):
-#         x, sr = librosa.load(path, sr=None, offset=offset,
-#                              duration=duration)
-#         all_x.append(x)
-#         all_sr.append(sr)
-
-#     assert len(np.unique(np.array(all_sr))) == 1
-#     return all_x, all_sr
-
-
-
-
 def load_pretrained_weights():
     weights = {}
-
     # loading pretrained vog_vgg learned weights
     vox_weights = loadmat(get_rel_path(VGG_VOX_WEIGHT_FILE),
                           struct_as_record=False, squeeze_me=True)
-
     for l in vox_weights['net'].layers[:-1]:
         if len(l.weights) > 0:
             weights[l.name] = l.weights
-    #         print(l.name, [i.shape for i in l.weights])
-
     for i in weights:
         weights[i][0] = weights[i][0].T
-
     weights['conv1'][0] = np.expand_dims(weights['conv1'][0], axis=1)
     weights['fc6'][0] = np.expand_dims(weights['fc6'][0], axis=3)
     weights['fc7'][0] = np.expand_dims(weights['fc7'][0], axis=-1)
     weights['fc7'][0] = np.expand_dims(weights['fc7'][0], axis=-1)
-
-#     print(weights.keys())
-#     for key in weights:
-#         print(key, [i.shape for i in weights[key]])
     return weights
 
-
-# Neural Network parameters
+##### Neural Network parameters
 conv_kernel1, n_f1, s1, p1 = 7, 96, 2, 1
 pool_kernel1, pool_s1 = 3, 2
 
@@ -260,45 +203,33 @@ conv_kernel7, n_f7, s7 = 1, 1024, 1
 
 conv_kernel8, n_f8, s8 = 1, 1024, 1
 
-
 def save_checkpoint(state, loss):
     """Save checkpoint if a new best is achieved"""
     fname = "checkpoint_" + time.strftime("%Y%m%d-%H%M%S") + "_" + str(loss.item()) + ".pth.tar"
     torch.save(state, get_rel_path(os.path.join(CHECKPOINTS_FOLDER, fname)))  # save checkpoint
     print("$$$ Saved a new checkpoint\n")
 
-
 #####################Voice-To-Text##############
-    
+
 #######Deepspeech Voice-To-Text Parameters########
 
 DS_model_file_path = 'deepspeech_data/deepspeech-0.7.0-models.pbmm'
 beam_width = 500
 DS_model = Model(DS_model_file_path)
 DS_model.setBeamWidth(beam_width)
-DS_model.enableExternalScorer('deepspeech_data/deepspeech-0.7.0-models.scorer') 
+DS_model.enableExternalScorer('deepspeech_data/deepspeech-0.7.0-models.scorer')
 
-
-    
 def get_text(data, model = DS_model):
 #     y , s = librosa.load(fpath, sr=16000)
     y = (data* 32767).astype('int16')
     text = model.stt(y)
-    return text    
-    
+    return text
+
 def get_text_score(phrase1, phrase2):
     return SequenceMatcher(a= phrase1, b= phrase2).ratio()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-#############Voice-Recognition, Recording############    
-    
+
+#############Voice-Recognition, Recording############
+
 def record(fpath, enroll = False):
     CHUNK = 1024 #2048 #1024
     FORMAT = pyaudio.paInt16
@@ -317,7 +248,7 @@ def record(fpath, enroll = False):
     if enroll:
         print(' If you do so, please let us know your secret phrases:)\n\n')
     else: print('\n')
-    
+
     p = pyaudio.PyAudio()
 
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
@@ -338,19 +269,13 @@ def record(fpath, enroll = False):
     stream.stop_stream()
     stream.close()
     p.terminate()
-
     print("Recording complete")
-    
-
-    wf = wave.open(fpath, 'wb') 
+    wf = wave.open(fpath, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
-
-    
-    
 
 def get_stft(all_x, nperseg=400, noverlap=239, nfft=1023):
 
@@ -364,7 +289,6 @@ def get_stft(all_x, nperseg=400, noverlap=239, nfft=1023):
         assert Z.shape[0] == 512
         all_stft.append(Z)
     return np.array(all_stft)
-
 
 def split_recording(recording=ENROLL_RECORDING_FNAME):
 #     wav, sr = librosa.load(recording)
@@ -387,48 +311,14 @@ def split_loaded_data(data, sr = RATE):
         all_x.append(x)
     return get_stft(all_x)
 
-
-# def save_stft(all_stft, audio_path=ENROLL_RECORDING_FNAME, stft_path = STFT_FOLDER):
-#     all_stft_paths = []
-#     for i in tqdm(range(len(all_stft))):
-#         user_stft = all_stft[i]
-#         stft_fname = '_'.join(audio_path.split('/')[-3:])[:-4] + '.npy'
-#         stft_path = get_rel_path(os.path.join(stft_path, stft_fname))
-#         np.save(stft_path, user_stft)
-#         all_stft_paths.append(stft_path)
-#     return all_stft_paths
-
-# moved to realtime.py
-# class AudioRec(object):
-#     def __init__(self):
-#         self.r = sr.Recognizer()
-#         self.src = sr.Microphone()
-#         with self.src as source:
-#             print("Calibrating microphone...")
-#             self.r.adjust_for_ambient_noise(source, duration=2)
-
-#     def listen(self, save_path):
-#         time_to_record = NUM_NEW_CLIPS * MIN_CLIP_DURATION + 1.0
-#         with self.src as source:
-#             print("Recording ...", time_to_record)
-#             # record for a maximum of 10s
-#             audio = self.r.listen(source, phrase_time_limit=time_to_record)
-#         # write audio to a WAV file
-#         with open(save_path, "wb") as f:
-#             f.write(audio.get_wav_data())
-
-
-
 # denoising functions
-
 def _stft(x, nperseg=400, noverlap=239, nfft=1023):
     _, _, Z = scipy.signal.stft(x, window="hamming",
                                    nperseg=nperseg,
                                    noverlap=noverlap,
                                    nfft=nfft)
     assert Z.shape[0] == 512
-    return np.array(Z)  
-
+    return np.array(Z)
 
 def _istft(x, nperseg=400, noverlap=239, nfft=1023):
 
@@ -436,14 +326,13 @@ def _istft(x, nperseg=400, noverlap=239, nfft=1023):
                                    nperseg=nperseg,
                                    noverlap=noverlap,
                                    nfft=nfft)
-    return np.array(Z)  
+    return np.array(Z)
 
 def _amp_to_db(x):
     return librosa.core.amplitude_to_db(x, ref=1.0, amin=1e-20, top_db=80.0)
 
 def _db_to_amp(x,):
     return librosa.core.db_to_amplitude(x, ref=1.0)
-
 
 # inputs: data after librosa.load('....wav', sr=16000)
 def removeNoise(
@@ -502,14 +391,12 @@ def removeNoise(
     mask_gain_dB = np.min(sig_stft_db)
 #     print("Noise threshold, Mask gain dB:\n",noise_thresh, mask_gain_dB)
     # Create a smoothing filter for the mask in time and frequency
-    
     filter_compt = np.concatenate(
             [
                 np.linspace(0, 1, n_grad_freq + 1, endpoint=False),
                 np.linspace(1, 0, n_grad_freq + 2),
             ]
         )[1:-1]
-        
     smoothing_filter = np.outer(
             filter_compt,
             filter_compt,
@@ -548,24 +435,20 @@ def removeNoise(
     recovered_signal = _istft(sig_stft_amp)
     recovered_spec = _amp_to_db(
         np.abs(_stft(recovered_signal)))
-
     return recovered_signal.astype('float32') #audio data as if loaded from librosa.load
-# return sig_stft_amp 
+# return sig_stft_amp
 
 
 
-def record_and_denoise( enroll = False, phrase = ''):    
+def record_and_denoise( enroll = False, phrase = ''):
     p = pyaudio.PyAudio()
 
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
-    
-#     LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
 
-    
+#     LONG_STRING = "  \"She had your dark suit in greasy wash water all year. Don't ask me to carry an oily rag like that!\""
 #     print("\n Speak the following sentence for recording: \n {}\n".format(LONG_STRING))
     print()
-    
 #     print(' or\n')
 #     print(' You can speak your own secret phrases.')
     if enroll:
@@ -574,74 +457,48 @@ def record_and_denoise( enroll = False, phrase = ''):
         else:
             LONG_STRING = '(Your phrase will be detected automatically)'
         print(" Speak your secret phrase for recording: \n {}\n".format(LONG_STRING))
-
 #         print(' If you do so, please let us know your secret phrases:)\n\n')
-    else: 
+    else:
         print(" Speak your secret phrase:\n")
-
-    
-    print(" Recording {} seconds \n".format(RECORD_SECONDS - EXTRA_SECONDS))   
-    
+    print(" Recording {} seconds \n".format(RECORD_SECONDS - EXTRA_SECONDS))
     if enroll:input(' Ready to start? (press enter)')
     else: print(" Recording starts soon...\n")#time.sleep(1)
-    
     frames_bg = []
     for i in range(0, int(RATE / CHUNK * (BACKGROUND_RECORD_SECONDS+1) ) ):
         data = stream.read(CHUNK, exception_on_overflow = False)
         frames_bg.append(data)
-
     stream.stop_stream()
     stream.close()
     p.terminate()
-
-    
-    
-
-    
     p = pyaudio.PyAudio()
-
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
-
-
- 
     print(" Recording starts in 3 second...")
     time.sleep(2)   # start 1 second earlier
     frames = []
-    
     print(" Speak now!")
-
     for i in tqdm(range(0, int(RATE / CHUNK * RECORD_SECONDS))):
         data = stream.read(CHUNK, exception_on_overflow = False)
         frames.append(data)
-
     stream.stop_stream()
     stream.close()
     p.terminate()
     print(" Recording complete.")
-
-#     audio_buffer = b''.join(frames)
-#     bg_buffer = b''.join(frames_bg)
     audio_data = (np.frombuffer(b''.join(frames), dtype=np.int16)/32767)
     bg_data = (np.frombuffer(b''.join(frames_bg), dtype=np.int16)/32767)
-    
     denoised_data = removeNoise(audio_data, bg_data)#.astype('float32')
-    
-    
-    return denoised_data#, audio_buffer, bg_buffer
+    return denoised_data
 
 
-def write_recording(fpath, audio_data):  
+def write_recording(fpath, audio_data):
     librosa.output.write_wav(fpath+'.wav', audio_data, sr=RATE)
-    
-    
-#     wf = wave.open(fpath, 'wb') 
+#     wf = wave.open(fpath, 'wb')
 #     wf.setnchannels(CHANNELS)
 #     wf.setsampwidth(2) #p.get_sample_size(FORMAT)
 #     wf.setframerate(RATE)
 #     wf.writeframes(buffer)#b''.join(frames)
 #     wf.close()
-    
+
 def fpath_numbering(fpath, extension = '.wav'):
     while os.path.exists(fpath+extension):
         if fpath[-1].isalpha():
@@ -649,7 +506,7 @@ def fpath_numbering(fpath, extension = '.wav'):
         else:
             fpath = fpath[:-1]+str(int(fpath[-1])+1)
     return fpath
-    
 
-    
-    
+
+
+
