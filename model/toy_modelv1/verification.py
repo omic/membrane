@@ -30,25 +30,6 @@ def build_buckets(max_sec, step_sec, frame_step):
 			buckets[i] = int(s)
 	return buckets
 
-
-# def get_embedding(model, wav_file, max_sec):
-# 	buckets = build_buckets(max_sec, c.BUCKET_STEP, c.FRAME_STEP)
-# 	signal = get_fft_spectrum(wav_file, buckets)
-# 	embedding = np.squeeze(model.predict(signal.reshape(1,*signal.shape,1)))
-# 	return embedding
-
-
-# def get_embedding_batch(model, wav_files, max_sec):
-# 	return [ get_embedding(model, wav_file, max_sec) for wav_file in wav_files ]
-
-
-# def get_embeddings_from_list_file(model, list_file, max_sec):
-# 	buckets = build_buckets(max_sec, c.BUCKET_STEP, c.FRAME_STEP)
-# 	result = pd.read_csv(list_file, delimiter=",")
-# 	result['features'] = result['filename'].apply(lambda x: get_fft_spectrum(x, buckets))
-# 	result['embedding'] = result['features'].apply(lambda x: np.squeeze(model.predict(x.reshape(1,*x.shape,1))))
-# 	return result[['filename','speaker','embedding']]
-
 def get_embeddings_from_file(model, file_path, max_sec):
 	buckets = build_buckets(max_sec, c.BUCKET_STEP, c.FRAME_STEP)
 	result = pd.DataFrame({'filename':[file_path]})
@@ -63,8 +44,8 @@ def verify(opt):
 	test_wav_path = opt.test
 	metric_fn = opt.metric
 	threshold = opt.threshold
-    
-    
+
+
 	print("Loading model weights from [{}]....".format(c.WEIGHTS_FILE))
 	model = vggvox_model()
 	model.load_weights(c.WEIGHTS_FILE)
@@ -100,12 +81,11 @@ def verify(opt):
 
 
 if __name__ == '__main__':
-# 	get_id_result()
 	parser = argparse.ArgumentParser()
 	subparsers = parser.add_subparsers()
 	parser_scoring = subparsers.add_parser('verify')
-	parser_scoring.add_argument('--input')#, default = 'data/wav/enroll/19-enroll.wav')
-	parser_scoring.add_argument('--test')#, default = 'data/wav/test/19-test.wav')
+	parser_scoring.add_argument('--input')
+	parser_scoring.add_argument('--test')
 	parser_scoring.add_argument('--metric', default = 'cosine')
 	parser_scoring.add_argument('--threshold', default = 0.1)
 	parser_scoring.set_defaults(func=verify)

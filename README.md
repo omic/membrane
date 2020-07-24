@@ -60,8 +60,15 @@ for
 /vox2_test_aac.zip
 ```
 
-### Structure
+### Privacy
 
+The data provided for the development of this model is highly protected; access to this data is permissable only by the signing of our Nondisclosure Agreement and under no condition can be distributed outside of Omic, Inc.
+
+Software developed on top of this data, however, are openly shareable, so long as they do not immediately pose a risk of the above data policy.
+
+*tl;dr don't share data and be mindful with sharing how you interface with the data.*
+
+## Structure
 
 ```model/toy_modelv1/``` : Path for the first version toy-model.
 
@@ -72,16 +79,13 @@ for
 - *Weights for modelv2 (VBBA, Membrane) will not be available until the project becomes public*
 <!-- ```src/``` : OS deployment files. Will not be updated except initial raw files. -->
 
-### Privacy
-
-The data provided for the development of this model is highly protected; access to this data is permissable only by the signing of our Nondisclosure Agreement and under no condition can be distributed outside of Omic, Inc.
-
-Software developed on top of this data, however, are openly shareable, so long as they do not immediately pose a risk of the above data policy.
-
-*tl;dr don't share data and be mindful with sharing how you interface with the data.*
 
 ## Model
+Public weights location:
 
+```toy_modelv1: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
+
+```modelv2: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar) to ```model/modelv2/checkpoints/```
 <!-- Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar -->
 
 - *Final weights will not be available until the project becomes public*
@@ -107,7 +111,7 @@ python3 verification.py verify --input [input file] --test [test file] --metric 
 ```
 An example:
 ```
-python3 verification.py verify --input data/wav/enroll/19-enroll.wav --test data/wav/test/19.wav --metric 'cosine' --threshold 0.1
+python3 verification.py verify --input data/enroll/19-enroll.wav --test data/test/19.wav --metric 'cosine' --threshold 0.1
 ```
 * Results will be stored in `res/results.csv`. Each line has format: `[input file name], [test file name], [metric function], [distance], [threshold], [verified?]`
 
@@ -151,7 +155,14 @@ Speech-to-Text Identification and Voice-Based Biometric Authentication
 
 * Install python3 and the required packages
 * For hyperparameters and global constants, check `utils.py`
-* Extract training data into `/datasets/`
+* Download model weights to
+
+```model/modelv2/checkpoints/```: [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar)
+
+```model/modelv2/deepspeech_data/```: [Download1](https://github.com/mozilla/DeepSpeech/releases/download/v0.7.4/deepspeech-0.7.4-models.pbmm), [Download2](https://github.com/mozilla/DeepSpeech/releases/download/v0.7.4/deepspeech-0.7.4-models.scorer) (please download both)
+
+
+<!-- * Extract training data into `/datasets/` -->
 * To run:
 
 
@@ -159,7 +170,6 @@ Speech-to-Text Identification and Voice-Based Biometric Authentication
 python3 membrane.py
 ```
 Instructions follow on user's terminal, i.e.
-
 --*`"Please type 'enroll' or 'e' to enroll a new user, type 'verify' or 'v' to verify an enrolled user:"`*
 
 <!-- --------------------------------------- -->
@@ -208,7 +218,7 @@ file or f
 
 <!-- ---------------------------------------
 **OS Deployment**
-TODO
+
 
 --------------------------------------- -->
 
