@@ -20,7 +20,7 @@
 **backup*/
 **/OS_deployment/
 src/
-data/
+./data/
 tests/
 res/
 
