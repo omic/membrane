@@ -76,12 +76,12 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 - *Final stage files will not be updated until the project becomes public*
 
-- *Weights for modelv2 (VBBA, Membrane) will not be available until the project becomes public*
+- *Final weights for modelv2 (VBBA, Membrane) will not be available until the project becomes public*
 <!-- ```src/``` : OS deployment files. Will not be updated except initial raw files. -->
 
 
 ## Model
-Public weights location:
+Intermediate weights of models for model testing:
 
 ```toy_modelv1: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
 
@@ -101,6 +101,7 @@ The model would score the new login phrase - identifying the person of closest m
 ---------------------------------------
 
 ### Tier 1 - Toy Model
+```model/toy_modelv1/```
 
 Pre-trained model by VoxCeleb1 dataset.
 
@@ -118,6 +119,7 @@ python3 verification.py verify --input data/enroll/19-enroll.wav --test data/tes
 ---------------------------------------
 
 ### Tier 2 - VBBA
+```model/modelv2/```
 
 Voice-Based Biometric Authetication.
 
@@ -151,7 +153,9 @@ python3 VBBA.py (optional argument)
 ### Tier 3 - Membrane
 **Command Line Model**
 
-Speech-to-Text Identification and Voice-Based Biometric Authentication
+```model/modelv2/```
+
+Speech-to-Text Identification and Voice-Based Biometric Authentication with Streaming Audio
 
 * Install python3 and the required packages
 * For hyperparameters and global constants, check `utils.py`
@@ -214,7 +218,7 @@ file or f
 
 
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
-
+* More details in `model/modelv2/README.md`.
 
 <!-- ---------------------------------------
 **OS Deployment**

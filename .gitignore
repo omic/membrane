@@ -24,7 +24,7 @@ src/
 tests/
 res/
 
-**/modelv2/recorder.py
+# **/modelv2/recorder.py
 **/setup**
 **/streamlit_deploy.py
 **/test_only_with_testsets.py
