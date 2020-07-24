@@ -81,14 +81,6 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 
 ## Model
-Intermediate weights of models for model testing:
-
-```toy_modelv1: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
-
-```modelv2: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar) to ```model/modelv2/checkpoints/```
-<!-- Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar -->
-
-- *Final weights will not be available until the project becomes public*
 
 We would like a voiceprint authentication model that isolates the user's voice based on the prescribed phrase and then authenticates the user based on a voice match to the training phrase.
 
@@ -97,6 +89,16 @@ As an example, we could provide several training phrases for the user to speak i
 
 
 The model would score the new login phrase - identifying the person of closest match and false positive/negative (precision/recall) data for understanding false positive and negative rates. The goal would be for these to score at least as well as common voice recognition models that currently exist.
+
+While final weights will not be available until the project becomes public here I am providing intermediate weights of models for model testing:
+
+```toy_modelv1: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
+
+```modelv2: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar) to ```model/modelv2/checkpoints/```
+<!-- Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar -->
+
+<!-- - *Final weights will not be available until the project becomes public* -->
+
 
 ---------------------------------------
 
