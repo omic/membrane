@@ -21,12 +21,21 @@
 **/OS_deployment/
 src/
 data/
-test/
+tests/
 res/
+
+**/modelv2/recorder.py
+**/setup**
+**/streamlit_deploy.py
+**/test_only_with_testsets.py
+
+#Github structure
+!model/**/deepspeech_data/
+!model/**/checkpoints/
 
 # note files
 **.txt
-! **/modelv2/requirements.txt
+!**/requirements.txt
 
 
 # AWS specific file
@@ -37,8 +46,8 @@ res/
 **/realtime.py
 **/modelv2/audioset/
 **/local**
-**/modelv2/speaker_models.pkl
-**/modelv2/speaker_phrases.pkl
+**/speaker_models.pkl
+**speaker_phrases.pkl
 **/modelv2/Dockerfile
 
 
@@ -55,11 +64,15 @@ res/
 
 #  Large files
 **.wav
+**.mp3
 **.m4a
+**.flac
 **.npy
 **.npz
 **.csv
 **.png
+**.pbmm
+**.scorer
 
 # Packages #
 ############
