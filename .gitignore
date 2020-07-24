@@ -32,6 +32,7 @@ res/
 #Github structure
 !model/**/deepspeech_data/
 !model/**/checkpoints/
+**/environment.yml
 
 # note files
 **.txt
