@@ -15,7 +15,7 @@
 # toy_modelv1/
 **/vggvox1/
 **/*docker*/
-**/*streamlit*/
+# **/*streamlit*/
 # **/*_st.py
 **backup*/
 **/OS_deployment/
