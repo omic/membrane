@@ -1,0 +1,59 @@
+.git
+.gitignore
+**/README.md
+LICENSE
+# Dockerfile*
+docker-compose*
+
+modelv2/setup.sh
+
+# Don't track content of these folders
+modelv2/wav_train_subset/
+modelv2/wav_test_subset/
+modelv2/checkpoints/
+modelv2/local_work/
+modelv2/recordings/
+modelv2/stft*/
+modelv2/__pycache__/
+modelv2/.ipynb_checkpoints/
+modelv2/datasets/
+modelv2/audio/
+modelv2/*stft*/
+toy_modelv1/
+modelv2/tested_users/
+
+
+**/__pycache__/
+
+
+# locally working files
+realtime.py
+modelv2/audioset/
+**/local**
+
+
+# Transfer Learning Weights
+**/*.mat
+**/*.h5
+**/*.ckpt
+
+#  Large files
+**/*.wav
+**/*.npy
+**/*.npz
+**/*.csv
+**/*.png
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+**/*.7z
+**/*.dmg
+**/*.gz
+**/*.iso
+**/*.jar
+**/*.rar
+**/*.zip
+
+pyenv/

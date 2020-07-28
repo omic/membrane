@@ -8,6 +8,8 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Deployed testing environment**:  http://membrane.insightai.me/.
 
+![Screeshot of Demo](static/membrane_demo.png)
+
 ***jun* branch is the default public branch. *master* will not be updated until the project becomes public**
 
 <!-- ## TODO
@@ -150,10 +152,11 @@ python3 VBBA.py (optional argument)
 * Results will be stored in `speaker_models.pkl`.
 * More details in `model/modelv2/README.md`.
 
+![Screeshot of Demo](static/VBBA_cli.png)
 ---------------------------------------
 
 ### Tier 3 - Membrane
-**Command Line Model**
+**Command Line Model
 
 ```model/modelv2/```
 
@@ -178,6 +181,7 @@ python3 membrane.py
 Instructions follow on user's terminal, i.e.
 --*`"Please type 'enroll' or 'e' to enroll a new user, type 'verify' or 'v' to verify an enrolled user:"`*
 
+![Screeshot of Demo](static/membrane_cli.png)
 <!-- --------------------------------------- -->
 
 - **Public mode** (shown in the terminal instructions):
