@@ -6,11 +6,12 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 **Contributor**: [Jun Seok Lee](lee.junseok39@gmail.com).
 
-**Deployed testing environment**:  http://membrane.insightai.me/.
+***jun* branch is the default public branch. *master* will not be updated until the project becomes public**
+
+**Deployed testing environment**:  http://membrane.insightai.me/:
 
 ![Screeshot of Demo](static/membrane_demo.png)
 
-***jun* branch is the default public branch. *master* will not be updated until the project becomes public**
 
 <!-- ## TODO
 
@@ -136,6 +137,8 @@ Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
 ```
 python3 VBBA.py (optional argument)
 ```
+![Screeshot of Demo](static/VBBA_cli.png)
+
 ```
 (optional arguments):
   -h, --help            show this help message and exit
@@ -152,11 +155,11 @@ python3 VBBA.py (optional argument)
 * Results will be stored in `speaker_models.pkl`.
 * More details in `model/modelv2/README.md`.
 
-![Screeshot of Demo](static/VBBA_cli.png)
+
 ---------------------------------------
 
 ### Tier 3 - Membrane
-**Command Line Model
+**Command Line Model**
 
 ```model/modelv2/```
 
@@ -226,7 +229,9 @@ file or f
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
 * More details in `model/modelv2/README.md`.
 
+
 <!-- ---------------------------------------
+
 **OS Deployment**
 
 
