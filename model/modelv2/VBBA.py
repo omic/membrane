@@ -6,6 +6,19 @@ from argparse import ArgumentParser
 from utils import *
 from network import *
 
+sample_phrase_list = [\
+"Oak is strong and also gives shade.",\
+"Cats and dogs each hate the other.",\
+"The pipe began to rust while new.",\
+"Open the crate but don't break the glass.",\
+"Add the sum to the product of these three.",\
+"Thieves who rob friends deserve jail.",\
+"The ripe taste of cheese improves with age.",\
+"Act on these orders with great speed.",\
+"The hog crawled under the high fence.",\
+"Move the vat over the hot fire."]
+
+
 
 def fwd_pass(user_stfts):
     """
@@ -87,15 +100,11 @@ def get_emb( enroll = False, file = ''):
         noise, data = np.split(data,[NOISE_DURATION_FROM_FILE])
         denoised_data = removeNoise(data,noise).astype('float32')
     else:
-        denoised_data = record_and_denoise( enroll)
+        denoised_data = record_and_denoise( enroll, sample_phrase_list=sample_phrase_list)
     user_stfts = split_loaded_data(denoised_data, RATE)
     user_stfts = np.expand_dims(user_stfts, axis=1)
     emb = fwd_pass(user_stfts)
     return emb, denoised_data
-
-
-def emb_dist(emb1, emb2):
-    return 1 - scipy.spatial.distance.cdist(emb1, emb2, DISTANCE_METRIC).item()
 
 
 def enroll_new_user(username, file = ''):
@@ -128,10 +137,11 @@ def verify_user(username, file = ''):
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
 #     print(emb.shape, speaker_models[username].shape)  ##let's check the shapes
-    dist = emb_dist(emb, speaker_models[username])
-    print('cosine distance: ',dist)
-    return dist > THRESHOLD , denoised_data   #, fpath
-
+    c_score = cosine_similarity(emb, speaker_models[username])
+    E_dist = euclidean_distances(emb, speaker_models[username])
+    print('cosine similarity: ',c_score)
+    print('Euclidean distance: ',E_dist)
+    return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , denoised_data
 
 def identify_user(file = ''):
     """
@@ -146,12 +156,11 @@ def identify_user(file = ''):
     else:
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
-    dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
-            for other_user in speaker_models]#actually similarity
-    print('cosine distance: ',dist)
-    username, max_similarity = max(dist, key=lambda x:x[1])
-
-    if max_similarity > THRESHOLD:
+    dist = [(other_user, euclidean_distances(emb, speaker_models[other_user]))
+            for other_user in speaker_models]#
+    username, min_distance = min(dist, key=lambda x:x[1])
+    print('Euclidean distance: ',min_distance, ' to ', username)
+    if min_distance < E_THRESHOLD:
         return username,   denoised_data
     return None,  denoised_data
 
@@ -316,6 +325,7 @@ def main():
         if not users_list:
             print("No users found")
         else:
+            print("Users:")
             print("\n".join(users_list))
 
 

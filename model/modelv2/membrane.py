@@ -5,7 +5,7 @@ warnings.filterwarnings('ignore')
 from argparse import ArgumentParser
 from utils import *
 from network import *
-
+from deepspeech import Model#, printVersions
 
 #############Voice-To-Text#############
 def store_user_phrase(username:str, phrase:str):
@@ -40,6 +40,36 @@ def identify_user_by_phrase(data):
     print('phrase scores:',list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
     matched_user = list(speaker_phrases)[max_idx]
     return matched_user
+
+#######Deepspeech Voice-To-Text Parameters########
+DS_FOLDER = 'deepspeech_data'
+if not os.path.exists(DS_FOLDER):
+    os.mkdir(DS_FOLDER)
+DS_model_file_path = 'deepspeech_data/deepspeech-0.7.0-models.pbmm'
+beam_width = 500
+DS_model = Model(DS_model_file_path)
+DS_model.setBeamWidth(beam_width)
+DS_model.enableExternalScorer('deepspeech_data/deepspeech-0.7.0-models.scorer')
+
+def get_text(data, model = DS_model):
+    """
+    Transcribe text from audio.
+
+    data: audio data as in array read from librosa with sampling rate 16000.
+    model: Deepspeech ASR model.
+    """
+#     y , s = librosa.load(fpath, sr=16000)
+    y = (data* 32767).astype('int16')
+    text = model.stt(y)
+    return text
+
+def get_text_score(phrase1:str, phrase2:str):
+    """
+    Return sentence similarity score using SequenceMatcher from difflib.
+    """
+    return SequenceMatcher(a= phrase1, b= phrase2).ratio()
+
+
 
 ##############Voice Recognition##########
 
@@ -182,12 +212,12 @@ def identify_user(file = ''):
     else:
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
-    dist = [(other_user, emb_dist(emb, speaker_models[other_user]))
-            for other_user in speaker_models]#actually similarity
-    print('cosine distance: ',dist)
-    username, max_similarity = max(dist, key=lambda x:x[1])
+    dist = [(other_user, euclidean_distances(emb, speaker_models[other_user]))
+            for other_user in speaker_models]#
+    print('Euclidean distance: ',dist)
+    username, min_distance = min(dist, key=lambda x:x[1])
 
-    if max_similarity > THRESHOLD:
+    if min_distance < E_THRESHOLD:
         return username,   denoised_data
     return None,  denoised_data
 

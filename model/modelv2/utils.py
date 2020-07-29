@@ -17,7 +17,7 @@ TRAIN_PAIR_SAMPLES = None #1000
 ##### ML_Part
 DISTANCE_METRIC = "cosine"
 C_THRESHOLD = THRESHOLD = 0.995 # 0.8 # similarity should be larger than
-E_THRESHOLD = 2 #distance should be less than
+E_THRESHOLD = 3 #distance should be less than
 LEARNING_RATE = 1e-3 #5e-4
 N_EPOCHS = 1 #30
 BATCH_SIZE = 32
@@ -74,9 +74,9 @@ except:
     print("No sound channel configured. Set CHANNEL = 1")
     CHANNELS = 1
 RATE = 16000 # 44100
-EXTRA_SECONDS = 2.0
+EXTRA_SECONDS = 1.0
 RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
-BACKGROUND_RECORD_SECONDS = 3
+BACKGROUND_RECORD_SECONDS = 2
 
 ##### For recorder.py
 RECORDING_PATH = "recordings"
@@ -89,7 +89,7 @@ VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
 ENROLL_RECORDING_FNAME = "enroll_recording"#.wav
 VERIFY_RECORDING_FNAME = "veri_recording" #"verify_user_recording.wav"
 IDENTIFY_RECORDING_FNAME = "iden_recording" #"identify_user_recording.wav"
-# MODEL_FNAME = "checkpoint_20181208-090431_0.007160770706832409.pth.tar"
+# MODEL_FNAME = "checkpoint.pth.tar"
 SPEAKER_MODELS_FILE = 'speaker_models.pkl'
 SPEAKER_PHRASES_FILE = 'speaker_phrases.pkl'
 ENROLLMENT_FOLDER = "enrolled_users"
@@ -135,7 +135,6 @@ import matplotlib.pyplot as plt
 
 #####Voice-to-text
 from difflib import SequenceMatcher
-from deepspeech import Model#, printVersions
 
 import torch
 import torch.nn as nn
@@ -232,35 +231,6 @@ def save_checkpoint(state:dict, loss):
     torch.save(state, get_rel_path(os.path.join(CHECKPOINTS_FOLDER, fname)))  # save checkpoint
     print("$$$ Saved a new checkpoint\n")
 
-#####################Voice-To-Text##############
-#######Deepspeech Voice-To-Text Parameters########
-DS_FOLDER = 'deepspeech_data'
-if not os.path.exists(DS_FOLDER):
-    os.mkdir(DS_FOLDER)
-DS_model_file_path = 'deepspeech_data/deepspeech-0.7.0-models.pbmm'
-beam_width = 500
-DS_model = Model(DS_model_file_path)
-DS_model.setBeamWidth(beam_width)
-DS_model.enableExternalScorer('deepspeech_data/deepspeech-0.7.0-models.scorer')
-
-def get_text(data, model = DS_model):
-    """
-    Transcribe text from audio.
-
-    data: audio data as in array read from librosa with sampling rate 16000.
-    model: Deepspeech ASR model.
-    """
-#     y , s = librosa.load(fpath, sr=16000)
-    y = (data* 32767).astype('int16')
-    text = model.stt(y)
-    return text
-
-def get_text_score(phrase1:str, phrase2:str):
-    """
-    Return sentence similarity score using SequenceMatcher from difflib.
-    """
-    return SequenceMatcher(a= phrase1, b= phrase2).ratio()
-
 #############Voice-Recognition, Recording############
 
 def record(fpath:str, enroll = False):
@@ -330,26 +300,37 @@ def get_stft(all_x, nperseg=400, noverlap=239, nfft=1023):
         all_stft.append(Z)
     return np.array(all_stft)
 
-# ######if need to split audio
-# def split_recording(recording=ENROLL_RECORDING_FNAME):
-# #     wav, sr = librosa.load(recording)
-#     RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
-#     all_x = []
-#     for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
-#         x, sr = librosa.load(recording, sr=16000, offset=offset,
-#                              duration=MIN_CLIP_DURATION)
-#         all_x.append(x)
-#     return get_stft(all_x)
 
-# def split_loaded_data(data, sr = RATE):
-#     RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
-#     RECORD_SECONDS = int(min(RECORD_SECONDS, len(data)/sr))
-#     all_x = []
-#     for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
-#         x = data[offset:offset+MIN_CLIP_DURATION*sr]
-#         all_x.append(x)
-#     return get_stft(all_x)
-# ##########
+def split_recording(recording=ENROLL_RECORDING_FNAME):
+    """
+    Split audio recording into short time bins.
+
+    recording: path to a recoding file.
+    """
+#     wav, sr = librosa.load(recording)
+    RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
+    all_x = []
+    for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
+        x, sr = librosa.load(recording, sr=16000, offset=offset,
+                             duration=MIN_CLIP_DURATION)
+        all_x.append(x)
+    return get_stft(all_x)
+
+def split_loaded_data(data, sr = RATE):
+    """
+    Split audio data into short time bins.
+
+    data: audio data as in array.
+    sr: sampling rate
+    """
+    RECORD_SECONDS = int(NUM_NEW_CLIPS * MIN_CLIP_DURATION)
+    RECORD_SECONDS = int(min(RECORD_SECONDS, len(data)/sr))
+    all_x = []
+    for offset in range(0, RECORD_SECONDS, int(MIN_CLIP_DURATION)):
+        x = data[offset:offset+MIN_CLIP_DURATION*sr]
+        all_x.append(x)
+    return get_stft(all_x)
+##########
 
 #### denoising functions
 def _stft(x, nperseg=400, noverlap=239, nfft=1023):
@@ -488,18 +469,29 @@ def removeNoise(
 
 
 
-def record_and_denoise( enroll = False, phrase = ''):
+def record_and_denoise( enroll = False, phrase = '', sample_phrase_list = [], RECORD_SECONDS = RECORD_SECONDS):
     """
     Record voice and denoise using removeNoise function.
 
     enroll: whether it is for enrollment or not.
     phrase: pass the phrase the user provided. If empty, phrase will be transcribed.
+    sample_phrase_list: a list of sample phrases.
+    RECORD_SECONDS: time to record in seconds.
     """
     p = pyaudio.PyAudio()
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE,
                     input=True, frames_per_buffer=CHUNK)
     print()
-    if enroll:
+    if sample_phrase_list:
+        if enroll:
+            LONG_STRING = "  \"She had your dark suit in greasy wash water all year.\""
+        else:
+            rdm_idx = np.random.choice(range(len(sample_phrase_list)))
+            LONG_STRING = "  \""+sample_phrase_list[rdm_idx]+"\""
+        print("\n Speak and repeat the following sentence for recording: \n {}\n".format(LONG_STRING))
+        print(' or\n')
+        print(' You can speak your own phrase.\n')
+    elif enroll:
         if phrase:
             LONG_STRING = phrase
         else:
@@ -512,7 +504,7 @@ def record_and_denoise( enroll = False, phrase = ''):
     if enroll:input(' Ready to start? (press enter)')
     else: print(" Recording starts soon...\n")#time.sleep(1)
     frames_bg = []
-    for i in range(0, int(RATE / CHUNK * (BACKGROUND_RECORD_SECONDS+1) ) ):
+    for i in range(0, int(RATE / CHUNK * (BACKGROUND_RECORD_SECONDS) ) ):
         data = stream.read(CHUNK, exception_on_overflow = False)
         frames_bg.append(data)
     stream.stop_stream()
