@@ -20,6 +20,11 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 - [x] Profiling visualization dataset created -- 200 samples.
 - [x] Training visualization dataset created -- 1K+ samples. -->
 
+## Overview
+An overview of the pipeline of **Membrane 2.0**:
+
+![Slide of pipeline](static/membrane_overview.png)
+
 ## Background
 - https://github.com/CorentinJ/Real-Time-Voice-Cloning
 - https://github.com/mozilla/DeepSpeech
