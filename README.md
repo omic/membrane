@@ -102,6 +102,13 @@ While final weights will not be available until the project becomes public here 
 
 <!-- - *Final weights will not be available until the project becomes public* -->
 
+[Tier 1 - Toy Model](#Tier-1---Toy-Model)
+
+[Tier 2 - VBBA](#Tier-2---VBBA)
+
+[Tier 3 - Membrane](#Tier-3---Membrane)
+
+Note: If run into an audio library/dependency error while running the model, please also follow [Dependencies](#Dependencies).
 
 ---------------------------------------
 
@@ -110,7 +117,11 @@ While final weights will not be available until the project becomes public here 
 
 Pre-trained model by VoxCeleb1 dataset.
 
-* Install python3 and the required packages
+* Install python3.7.7 and the required packages, i.e.
+```
+conda create -n membrane_toy python=3.7.7 pip
+python -m pip install -r requirements.txt
+```
 * To run:
 ```
 python3 verification.py verify --input [input file] --test [test file] --metric [metric function (default:'cosine')] --threshold [threshold of metric function for verification (default:0.1)]
@@ -130,7 +141,11 @@ Voice-Based Biometric Authetication.
 
 Repurposed Voice Verification Model Based on Toy Model (Pre-trained VGGVox1).
 
-* Install python3 and the required packages
+* Install python3.7.7 and the required packages
+```
+conda create -n membrane python=3.7.7 pip
+python -m pip install -r requirements.txt
+```
 * Extract training data into `/wav_train_subset`
 * Move some subset of data of test users into `/wav_test_subset`
 * To run:
@@ -165,7 +180,11 @@ python3 VBBA.py (optional argument)
 
 Speech-to-Text Identification and Voice-Based Biometric Authentication with Streaming Audio
 
-* Install python3 and the required packages
+* Install python3.7.7 and the required packages
+```
+conda create -n membrane python=3.7.7 pip
+python -m pip install -r requirements.txt
+```
 * For hyperparameters and global constants, check `utils.py`
 * Download model weights to
 
@@ -241,3 +260,14 @@ file or f
 
 Collect and package all references and results.  Publish a paper in a top journal.  Save the princess. -->
 
+---------------------------------------
+---------------------------------------
+### Dependencies
+
+If run into an audio library/dependency error, please try this (Linux):
+```
+apt-get update && \
+	apt-get install -qq -y gcc make \
+apt-transport-https ca-certificates build-essential \
+libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 libav-tools alsa-utils
+```

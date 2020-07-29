@@ -43,7 +43,7 @@ def verify(opt):
 	input_wav_path = opt.input
 	test_wav_path = opt.test
 	metric_fn = opt.metric
-	threshold = opt.threshold
+	threshold = float(opt.threshold)
 
 
 	print("Loading model weights from [{}]....".format(c.WEIGHTS_FILE))

@@ -32,6 +32,7 @@ def find_username(fpath,splitter = '-'):
 #     return fpath[i+1:fpath.find('_', i)]
 
 ####### For each Training data ##############
+DATASETS_FOLDER = 'datasets'
 TRAIN_PATH = 'datasets/train-other-500'
 STFT_FOLDER = os.path.join(TRAIN_PATH.rsplit('/')[0],'stft_{}s'.format(int(MIN_CLIP_DURATION)))
 PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
@@ -107,7 +108,7 @@ except:
 import itertools
 from collections import Counter
 from collections import OrderedDict
-from IPython.core.display import HTML
+# from IPython.core.display import HTML
 import argparse
 
 import numpy as np
@@ -122,7 +123,7 @@ from sklearn.metrics import precision_recall_fscore_support as score
 
 import librosa
 import librosa.display
-import speech_recognition as sr
+# import speech_recognition as sr
 # import pyaudio
 import wave
 import contextlib
@@ -142,6 +143,9 @@ import torchvision
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 from torch.utils.checkpoint import checkpoint
+
+if not os.path.exists(DATASETS_FOLDER):
+    os.mkdir(DATASETS_FOLDER)
 
 if not os.path.exists(STFT_FOLDER):
     os.mkdir(STFT_FOLDER)
@@ -212,7 +216,9 @@ def save_checkpoint(state, loss):
 #####################Voice-To-Text##############
 
 #######Deepspeech Voice-To-Text Parameters########
-
+DS_FOLDER = 'deepspeech_data'
+if not os.path.exists(DS_FOLDER):
+    os.mkdir(DS_FOLDER)
 DS_model_file_path = 'deepspeech_data/deepspeech-0.7.0-models.pbmm'
 beam_width = 500
 DS_model = Model(DS_model_file_path)
