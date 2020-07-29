@@ -196,6 +196,9 @@ class VoxCelebDataset(Dataset):
 
 
 def load_saved_model(fname, test=True):
+    """
+    Load saved weights.
+    """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     new_model_dict = VggVox()
     checkpoint_path = get_rel_path(os.path.join(CHECKPOINTS_FOLDER, fname))

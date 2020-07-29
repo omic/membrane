@@ -8,9 +8,9 @@ from network import *
 
 
 #############Voice-To-Text#############
-def store_user_phrase(username, phrase):
+def store_user_phrase(username:str, phrase:str):
     """
-    this function adds username and user's secret phrase into database
+    This function adds 'username' and user's secret 'phrase' into database.
     """
     speaker_phrases = load_speaker_phrases()
     speaker_phrases[username] = phrase
@@ -19,6 +19,9 @@ def store_user_phrase(username, phrase):
     print("Successfully added user {}'s phrase to database".format(username))
 
 def load_speaker_phrases(file = SPEAKER_PHRASES_FILE):
+    """
+    Load enrolled phrases saved in 'file'.
+    """
     if not os.path.exists(file):
         return dict()
     with open(file, 'rb') as fhand:
@@ -26,6 +29,11 @@ def load_speaker_phrases(file = SPEAKER_PHRASES_FILE):
     return speaker_phrases
 
 def identify_user_by_phrase(data):
+    """
+    Identify the user by matching phrase to enrolled phrases.
+
+    data: audio data as in array.
+    """
     phrase = get_text(data)
     speaker_phrases = load_speaker_phrases()
     max_idx = np.argmax(list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
@@ -37,8 +45,10 @@ def identify_user_by_phrase(data):
 
 def fwd_pass(user_stfts):
     """
-    recordings is the result of split recordings
-    returns mean embedding of recordings
+    recordings is the result of split recordings.
+    returns mean embedding of recordings.
+
+    user_stfts: stft array.
     """
     checkpoints = os.listdir(get_rel_path('checkpoints/'))
     checkpoints.sort()
@@ -49,10 +59,12 @@ def fwd_pass(user_stfts):
     return np.expand_dims(np.mean(out_np, axis=0), axis=0)
 
 
-def store_user_embedding(username, emb):
+def store_user_embedding(username:str, emb):
     """
-    this function adds username and its emb into database
-    emb is mean embedding of the recording returned from fwd_pass
+    this function adds 'username' and its 'emb' into database.
+    emb is mean embedding of the recording returned from fwd_pass.
+
+    emb: mean embedding vector array
     """
     speaker_models = load_speaker_models()
     speaker_models[username] = emb
@@ -61,27 +73,43 @@ def store_user_embedding(username, emb):
     print("Successfully added user {} to database".format(username))
 
 
-def get_user_embedding(usernames):
+def get_user_embedding(usernames:str):
     """
-    returns list of users emb from the db
+    returns list of users emb from the db.
     """
     speaker_models = load_speaker_models()
     return [speaker_models[username] for username in usernames]
 
 
-def load_speaker_models():
-    if not os.path.exists(SPEAKER_MODELS_FILE):
+def load_speaker_models(file = SPEAKER_MODELS_FILE):
+    """
+    Load enrolled embeddings saved in 'file'.
+    """
+    if not os.path.exists(file):
         return dict()
-    with open(SPEAKER_MODELS_FILE, 'rb') as fhand:
+    with open(file, 'rb') as fhand:
         speaker_models = pickle.load(fhand)
     return speaker_models
 
 
 def show_current_users():
+    """
+    returns list of usernames.
+    """
     speaker_models = load_speaker_models()
     return list(speaker_models.keys())
 
 def get_emb( enroll = False, file = '', phrase = ''):
+    """
+    returns an embedding vector and denoised audio data array.
+
+    file: path to the audio file
+        if given, speaker's audio is read from 'file'.
+            Miminum of either NOISE_DURATION_FROM_FILE or the first two seconds (RATE*2) will be considered as background noise.
+        if not given, invoke record_and_denoise function.
+    enroll: indicate whether the user is enrolling or not.
+    phrase: phrase is passed if the user provide it. Otherwise pass '' and it will be transcribed later.
+    """
     if file:
         data , _ = librosa.load(file,sr=RATE)
         NOISE_DURATION_FROM_FILE = int(len(data)*0.25) # N_D_F_F in terms of lenth of data not second
@@ -95,7 +123,14 @@ def get_emb( enroll = False, file = '', phrase = ''):
     emb = fwd_pass(user_stfts)
     return emb, denoised_data
 
-def enroll_new_user(username, file = ''):
+def enroll_new_user(username:str, file = ''):
+    """
+    Enroll a new user.
+
+    username: user's username for the system.
+    file: path to a user's audio file to be used for the enrollment.
+        users can use their existing file by passing a path to the file. Otherwise recording function will be invoked.
+    """
     if file:
         emb, denoised_data = get_emb( enroll = True, file = file)
         print("\n Please type your phrase.\n")
@@ -116,6 +151,12 @@ def enroll_new_user(username, file = ''):
     store_user_phrase(username, phrase)
 
 def verify_user( file = ''):
+    """
+    Verify user's voice.
+
+    file: path to a user's audio file to be used for the verification.
+        users can use their existing file by passing a path to the file. Otherwise recording function will be invoked.
+    """
     if file:
         emb,  denoised_data = get_emb(file = file)
     else:
@@ -129,6 +170,13 @@ def verify_user( file = ''):
     return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , denoised_data, username  #, fpath
 
 def identify_user(file = ''):
+    """
+    -Administrator mode-
+    Identify the speaker.
+
+    file: path to a user's audio file to be used for the identification.
+        users can use their existing file by passing a path to the file. Otherwise recording function will be invoked.
+    """
     if file:
         emb,  denoised_data = get_emb(file = file)
     else:
@@ -143,7 +191,11 @@ def identify_user(file = ''):
         return username,   denoised_data
     return None,  denoised_data
 
-def delete_user(username):
+def delete_user(username:str):
+    """
+    -Administrator mode-
+    Delete 'username' from the enrollment files.
+    """
     speaker_models = load_speaker_models()
     _ = speaker_models.pop(username)
     speaker_phrases = load_speaker_phrases()
@@ -155,18 +207,31 @@ def delete_user(username):
         pickle.dump(speaker_phrases, fhand)
 
 def clear_database():
+    """
+    -Administrator mode-
+    Delete all enrolled users.
+    """
     with open(SPEAKER_MODELS_FILE, 'wb') as fhand:
         pickle.dump(dict(), fhand)
     print("Deleted all users in database")
 
 def do_list():
+    """
+    -Administrator mode-
+    Print enrolled usernames.
+    """
     users_list = show_current_users()
     if not users_list:
         print("No users found")
     else:
         print("\n".join(users_list))
 
-def do_enroll(username, file = ''):
+def do_enroll(username:str, file = ''):
+    """
+    Invoke enroll_new_user function with instructions.
+
+    file: path to an audio file if a user wants to use an existing file.
+    """
     print()
     assert username is not None, "Enter username"
     if username in show_current_users():
@@ -179,6 +244,11 @@ def do_enroll(username, file = ''):
     enroll_new_user(username, file = file)
 
 def do_verify( file = ''):
+    """
+    Invoke verify_user function with instructions.
+
+    file: path to an audio file if a user wants to use an existing file.
+    """
     print()
     verified,  denoised_data, username = verify_user( file = file)
     if verified:
@@ -195,6 +265,11 @@ def do_verify( file = ''):
         print('Recording removed')
 
 def do_identify( file = ''):
+    """
+    Invoke identify_user function with instructions.
+
+    file: path to an audio file if a user wants to use an existing file.
+    """
     identified_user,  denoised_data = identify_user(file = file)
     print("Identified User {}".format(identified_user))
     correct_user = input(f"Are you {identified_user}? (y/n): ")
@@ -213,7 +288,10 @@ def do_identify( file = ''):
     else:
         print('Recording removed')
 
-def do_delete(username):
+def do_delete(username:str):
+    """
+    Invoke delete_user function with instructions.
+    """
     assert username is not None, "Enter username"
     assert username in show_current_users(), "Unrecognized username"
     delete_user(username)

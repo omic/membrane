@@ -9,19 +9,16 @@ parser.add_argument('--test',
                         default=False, action="store_true",
                         help="Preprocessing for test data")
 parser.add_argument('--file-list',
-                        default='', 
+                        default='',
                         help="Provide the txt file of a list of audio paths if audio files are in subdirectories")
 
-
 args = parser.parse_args()
-
-
 
 if args.test:
     TRAIN_PATH, CLIPS_LIST_FILE = TEST_PATH, TEST_CLIPS_LIST_FILE
 
 CLIP_PATH = get_rel_path(os.path.join(TRAIN_PATH,'../',CLIPS_LIST_FILE))
-    
+
 if args.file_list:
     with open(CLIP_PATH, 'w') as clip:
         with open(get_rel_path(args.file_list), 'r') as f:
@@ -34,7 +31,6 @@ if args.file_list:
                     clip.write('\n')
                     clip.write(os.path.join(TRAIN_PATH,'../',line.split('\n')[0]+' '))
                 prev = user
-    
 else:
     train_user_ids = os.listdir(get_rel_path(TRAIN_PATH))
     train_user_ids.sort()
