@@ -12,7 +12,7 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 ![Screeshot of Demo](static/membrane_demo.png)
 
-For stability this demo only accepts existing audio file on your device.
+*For stability this demo only accepts an existing audio file on your device.*
 <!-- ## TODO
 
 - [x] Jun registers for [OS](os.omic.ai).
@@ -63,6 +63,24 @@ for
 /vox2_test_aac.zip
 ```
 
+### Free ST American English Corpus (SLR45)
+- A free American English corpus by Surfingtech (www.surfing.ai), containing utterances from 10 speakers, Each speaker has about 350 utterances.
+
+Source: https://www.openslr.org/45
+
+[Download](http://www.openslr.org/resources/45/ST-AEDS-20180100_1-OS.tgz) (351M)
+
+### LibriSpeech ASR Corpus (SLR12)
+- Large-scale corpus of 16kHz read English speech, prepared by Vassil Panayotov with the assistance of Daniel Povey. The data is derived from read audiobooks from the LibriVox project, and has been carefully segmented and aligned.
+
+Sourse: http://www.openslr.org/12
+
+[train-other-500.tar.gz](http://www.openslr.org/resources/12/train-other-500.tar.gz) (30G),
+[test-other.tar.gz](http://www.openslr.org/resources/12/test-other.tar.gz) (328M)
+
+### Private Recordings
+- Private end users recordings in each environment (i.e. cafe, street, wind, near TV).
+
 ### Privacy
 
 The data provided for the development of this model is highly protected; access to this data is permissable only by the signing of our Nondisclosure Agreement and under no condition can be distributed outside of Omic, Inc.
@@ -73,11 +91,11 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Structure
 
-```model/toy_modelv1/``` : Path for the first version toy-model.
+```model/toy_modelv1/``` : Path for the toy-model.
 
-```model/modelv2/``` : Main Membrane 2.0 model.
+```model/modelv2/``` : Main Membrane 2.0 model and its earlier model (VBBA).
 
-- *Final stage files will not be updated until the project becomes public*
+- *Final stage codes will not be updated until the project becomes public*
 
 - *Final weights for modelv2 (VBBA, Membrane) will not be available until the project becomes public*
 <!-- ```src/``` : OS deployment files. Will not be updated except initial raw files. -->
