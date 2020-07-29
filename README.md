@@ -95,9 +95,9 @@ The model would score the new login phrase - identifying the person of closest m
 
 While final weights will not be available until the project becomes public here I am providing intermediate weights of models for model testing:
 
-```toy_modelv1: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
+```toy_modelv1```: [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/weights.h5) to ```model/toy_modelv1/data/weights/```
 
-```modelv2: ``` [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar) to ```model/modelv2/checkpoints/```
+```modelv2```: [Download](https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200617-015735_0.0005641535972245038.pth.tar) to ```model/modelv2/checkpoints/```
 <!-- Weights location:  https://membrane.s3-us-west-2.amazonaws.com/checkpoints/checkpoint_20200622-102649_0.00017134382505901158.pth.tar -->
 
 <!-- - *Final weights will not be available until the project becomes public* -->
