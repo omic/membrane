@@ -1,5 +1,5 @@
 # Membrane 2.0
-Rapid Voice-Based Biometric Authentication Project with OMIC
+Rapid Voice-Based Biometric Authentication Project with OMIC.ai.
 
 
 We have a web-based biomedical/AI platform used for open-source COVID-19 research. Users currently log in via magic link, but we would like to add an option where the person is identified via voice through the browser. Ideally we would generate a phrase for the user to speak into a laptop/PC microphone, at which time the user would be rapidly authenticated and would be granted access.
@@ -12,7 +12,7 @@ We have a web-based biomedical/AI platform used for open-source COVID-19 researc
 
 ![Screeshot of Demo](static/membrane_demo.png)
 
-
+For stability this demo only accepts existing audio file on your device.
 <!-- ## TODO
 
 - [x] Jun registers for [OS](os.omic.ai).
