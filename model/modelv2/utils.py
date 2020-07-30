@@ -43,7 +43,7 @@ TRAIN_PATH = 'datasets/train-other-500'
 STFT_FOLDER = os.path.join(TRAIN_PATH.rsplit('/')[0],'stft_{}s'.format(int(MIN_CLIP_DURATION)))
 PAIRS_FILE = 'pairs_{}s.csv'.format(int(MIN_CLIP_DURATION))
 CLIPS_LIST_FILE = 'clips_list.txt'
-PASS_FIRST_USERS = 300
+PASS_FIRST_USERS = 300 #Pass already trained users
 
 ##### Augmentation ####
 AUGMENT = True
@@ -83,7 +83,7 @@ RECORDING_PATH = "recordings"
 RECORDING_STFT_FOLDER = os.path.join(RECORDING_PATH,'stft')#RECORDING_PATH + '/'+'stft'
 
 ##### Files and Directories
-VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
+# VGG_VOX_WEIGHT_FILE = "./vggvox_ident_net.mat"
 
 ##### VBBA.py
 ENROLL_RECORDING_FNAME = "enroll_recording"#.wav

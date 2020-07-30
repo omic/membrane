@@ -2,21 +2,8 @@
 # coding: utf-8
 from utils import *
 import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--test',
-                        default=False, action="store_true",
-                        help="Preprocessing for test data")
-parser.add_argument('--for-enroll',dest = 'val',type=int,
-                        default=0,
-                        help="Number of each users data taken out for enrollment, which will give separate pairs file.")
-args = parser.parse_args()
-
-if args.test:
-    TRAIN_PATH, PAIRS_FILE, STFT_FOLDER, CLIPS_LIST_FILE, CLIPS_PER_USER = TEST_PATH, TEST_PAIRS_FILE, TEST_STFT_FOLDER, TEST_CLIPS_LIST_FILE, TEST_CLIPS_PER_USER
-    PASS_FIRST_USERS = 0
-
-CLIP_PATH = get_rel_path(os.path.join(TRAIN_PATH,'../',CLIPS_LIST_FILE))
+import warnings
+warnings.filterwarnings("ignore")
 
 def get_clip_duration(fname:str, subdirectory = None):
     """
@@ -29,10 +16,8 @@ def get_clip_duration(fname:str, subdirectory = None):
         fname = ''.join(subdirectory.split('/'))+'/'+fname
     return librosa.core.get_duration(filename = fname)
 
-import warnings
-warnings.filterwarnings("ignore")
 
-def get_user_clips(clip_path:str = CLIP_PATH, clips_per_user:int=CLIPS_PER_USER):
+def get_user_clips(clip_path:str, clips_per_user:int=CLIPS_PER_USER):
     """
     Make a list of 'clips_per_user' number of clips longer than 'MIN_CLIP_DURATION' of each user.
 
@@ -66,9 +51,6 @@ def get_user_clips(clip_path:str = CLIP_PATH, clips_per_user:int=CLIPS_PER_USER)
             num_users +=1
             if num_users >= TOTAL_USERS: break
     return all_user_clips
-
-all_user_clips = get_user_clips()
-print(len(all_user_clips), "clips")
 
 ###########Augmentation###########
 def time_shift(data, sampling_rate = 16000, shift_max = 1, shift_direction = 'both'):
@@ -110,16 +92,10 @@ def band_limited_noise(min_freq, max_freq, samples=1024, samplerate=1):
     f[np.logical_and(freqs >= min_freq, freqs <= max_freq)] = 1
     return fftnoise(f)
 ###
-
-with open(get_rel_path(BACKGROUND_LIST_PATH), 'r') as f:
-    bg_array = []
-    for line in f:
-        bg_array.append(np.load(line.split('\n')[0]))
-
+#####Augmentation Variable####
 SHIFT_CHANCE = 0.5 #20% chance of shifting
 W_NOISE_CHANCE = 0.8 #80% chance of white noise
 NOISE_CHANCE = 0.5 #50% chance of putting noise
-
 def augmentation(src_data, src_rate = RATE):
     """
     src_data: source audio data as in array.
@@ -142,8 +118,6 @@ def augmentation(src_data, src_rate = RATE):
         noise = noise+bg_noise
         src_data = src_data +noise
     return src_data, noise
-
-
 ##################################
 
 def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION, subdirectory = None, augment:bool = AUGMENT):
@@ -169,13 +143,6 @@ def get_waveform(clip_list, offset=0., duration=MIN_CLIP_DURATION, subdirectory 
 #     assert len(np.unique(np.array(all_sr))) == 1
     return all_x, all_sr
 
-all_x, all_sr = get_waveform(all_user_clips)# subdirectory=TRAIN_PATH
-
-assert len(np.unique(np.array([x.shape[0] for x in all_x]))) == 1, str(len(np.unique(np.array([x.shape[0] for x in all_x]))))
-
-all_stft = get_stft(all_x)
-print('stft shape: ',all_stft[0].shape)
-
 def save_stft(all_stft, all_user_clips):
     """
     all_stft: array of STFTs for all clips.
@@ -191,56 +158,84 @@ def save_stft(all_stft, all_user_clips):
         all_stft_paths.append(stft_path)
     return all_stft_paths
 
-stft_paths = save_stft(all_stft, all_user_clips)
-
-if args.val:
-    val_df = pd.DataFrame()
-    test_df = pd.DataFrame()
-    df = pd.DataFrame(stft_paths, columns = ['path'])
-    df['user'] = df['path'].apply(find_username)
-    for user in df['user'].unique():
-        user_df = df[df['user'] == user]
-        val_df = pd.concat([val_df,user_df[:args.val]])
-        test_df = pd.concat([test_df,user_df[args.val:]])
-    test_data_path = list(itertools.permutations(test_df['path'], 2))
-    test_data_user = list(itertools.permutations(test_df['user'],2))
-    val_data_path = list(itertools.permutations(val_df['path'], 2))
-    val_data_user = list(itertools.permutations(val_df['user'], 2))
-    df = pd.concat([pd.DataFrame(test_data_path,columns = ['path1','path2']),\
-    pd.DataFrame(test_data_user,columns = ['user1','user2'])],axis=1)
-    val_df = pd.concat([pd.DataFrame(val_data_path,columns = ['path1','path2']),\
-    pd.DataFrame(val_data_user,columns = ['user1','user2'])],axis=1)
-else:
-    data = list(itertools.permutations(stft_paths, 2))
-    stft_len = len(stft_paths)
-    print('stft_len: ',stft_len)
-    # if TRAIN_PAIR_SAMPLES
-    # data = zip(np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES),np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES))
-    df = pd.DataFrame(data, columns=["path1", "path2"])
-
-    df['user1'] = df['path1'].apply(find_username)
-    df['user2'] = df['path2'].apply(find_username)
-
 def make_label(df):
     df['label'] = (df.user1 == df.user2).astype('int8')
     df['label'] = np.abs(df.label - 1)
     return df
 
-df = make_label(df)
-if args.val: val_df = make_label(val_df)
-print("Total unique users", df.user1.nunique())
-# assert df.user1.nunique() == TOTAL_USERS
-# assert df.user2.nunique() == TOTAL_USERS
-print("len", len(df))
-print(df.sample(5))
-print(df.label.value_counts())
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test',
+                            default=False, action="store_true",
+                            help="Preprocessing for test data")
+    parser.add_argument('--for-enroll',dest = 'val',type=int,
+                            default=0,
+                            help="Number of each users data taken out for enrollment, which will give separate pairs file.")
+    args = parser.parse_args()
 
-pairs_df = df #.sample(TRAIN_PAIR_SAMPLES)
-PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../', PAIRS_FILE)
-# PAIRS_FILE = 'pairs_test.csv'
-pairs_df.to_csv(PAIRS_FILE_PATH, index=False)
-if args.val:
-    pairs_df = val_df #.sample(TRAIN_PAIR_SAMPLES)
-    PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../','val_'+ PAIRS_FILE)
+    if args.test:
+        TRAIN_PATH, PAIRS_FILE, STFT_FOLDER, CLIPS_LIST_FILE, CLIPS_PER_USER = TEST_PATH, TEST_PAIRS_FILE, TEST_STFT_FOLDER, TEST_CLIPS_LIST_FILE, TEST_CLIPS_PER_USER
+        PASS_FIRST_USERS = 0
+
+    CLIP_PATH = get_rel_path(os.path.join(TRAIN_PATH,'../',CLIPS_LIST_FILE))
+    all_user_clips = get_user_clips(CLIP_PATH, CLIPS_PER_USER)
+    print(len(all_user_clips), "clips")
+
+    with open(get_rel_path(BACKGROUND_LIST_PATH), 'r') as f:
+        bg_array = []
+        for line in f:
+            bg_array.append(np.load(line.split('\n')[0]))
+    all_x, all_sr = get_waveform(all_user_clips)# subdirectory=TRAIN_PATH
+
+    assert len(np.unique(np.array([x.shape[0] for x in all_x]))) == 1, str(len(np.unique(np.array([x.shape[0] for x in all_x]))))
+
+    all_stft = get_stft(all_x)
+    print('stft shape: ',all_stft[0].shape)
+    stft_paths = save_stft(all_stft, all_user_clips)
+    if args.val:
+        val_df = pd.DataFrame()
+        test_df = pd.DataFrame()
+        df = pd.DataFrame(stft_paths, columns = ['path'])
+        df['user'] = df['path'].apply(find_username)
+        for user in df['user'].unique():
+            user_df = df[df['user'] == user]
+            val_df = pd.concat([val_df,user_df[:args.val]])
+            test_df = pd.concat([test_df,user_df[args.val:]])
+        test_data_path = list(itertools.permutations(test_df['path'], 2))
+        test_data_user = list(itertools.permutations(test_df['user'],2))
+        val_data_path = list(itertools.permutations(val_df['path'], 2))
+        val_data_user = list(itertools.permutations(val_df['user'], 2))
+        df = pd.concat([pd.DataFrame(test_data_path,columns = ['path1','path2']),\
+        pd.DataFrame(test_data_user,columns = ['user1','user2'])],axis=1)
+        val_df = pd.concat([pd.DataFrame(val_data_path,columns = ['path1','path2']),\
+        pd.DataFrame(val_data_user,columns = ['user1','user2'])],axis=1)
+    else:
+        data = list(itertools.permutations(stft_paths, 2))
+        stft_len = len(stft_paths)
+        print('stft_len: ',stft_len)
+        # if TRAIN_PAIR_SAMPLES
+        # data = zip(np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES),np.random.choice(stft_paths, size = TRAIN_PAIR_SAMPLES))
+        df = pd.DataFrame(data, columns=["path1", "path2"])
+        df['user1'] = df['path1'].apply(find_username)
+        df['user2'] = df['path2'].apply(find_username)
+    df = make_label(df)
+    if args.val: val_df = make_label(val_df)
+    print("Total unique users", df.user1.nunique())
+    # assert df.user1.nunique() == TOTAL_USERS
+    # assert df.user2.nunique() == TOTAL_USERS
+    print("len", len(df))
+    print(df.sample(5))
+    print(df.label.value_counts())
+
+    pairs_df = df #.sample(TRAIN_PAIR_SAMPLES)
+    PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../', PAIRS_FILE)
     # PAIRS_FILE = 'pairs_test.csv'
     pairs_df.to_csv(PAIRS_FILE_PATH, index=False)
+    if args.val:
+        pairs_df = val_df #.sample(TRAIN_PAIR_SAMPLES)
+        PAIRS_FILE_PATH = os.path.join(TRAIN_PATH, '../','val_'+ PAIRS_FILE)
+        # PAIRS_FILE = 'pairs_test.csv'
+        pairs_df.to_csv(PAIRS_FILE_PATH, index=False)
+
+# if __name__ == '__main__':
+#     main()

@@ -294,3 +294,7 @@ apt-get update && \
 apt-transport-https ca-certificates build-essential \
 libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 libav-tools alsa-utils
 ```
+
+---------------------------------------
+## Acknowledge
+I thank Alok Deshpande for reviewing codes and useful suggestions.
