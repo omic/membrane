@@ -265,18 +265,12 @@ file or f
 
 : Use an existing file instead of the streaming recorder (command line input follows) -- *`'Please input file path:'`*
 
-<!-- --------------------------------------- -->
-
-
 * Results will be stored in `speaker_models.pkl` and `speaker_phrases.pkl`.
 * More details in `model/modelv2/README.md`.
 
 
 <!-- ---------------------------------------
-
 **OS Deployment**
-
-
 --------------------------------------- -->
 
 <!-- ### Tier 4 (Boss Level)
