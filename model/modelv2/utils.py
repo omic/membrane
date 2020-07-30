@@ -4,6 +4,9 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
+### If invoked from other directory, change the working directory to current path.
+os.chdir(os.path.dirname(__file__))
+
 ROOT_DIR = ""
 CHECKPOINTS_FOLDER = "checkpoints"
 

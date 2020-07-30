@@ -96,9 +96,11 @@ Software developed on top of this data, however, are openly shareable, so long a
 
 ## Structure
 
-```model/toy_modelv1/``` : Path for the toy-model.
+```model/toy_modelv1/``` : Path for a toy-model.
 
-```model/modelv2/``` : Main Membrane 2.0 model and its earlier model (VBBA).
+```model/modelv2/``` : Main Membrane 2.0 model modules and its earlier model (VBBA).
+
+```membrane.py``` : Main Membrane 2.0 script to run.
 
 - *Final stage codes will not be updated until the project becomes public*
 
@@ -146,6 +148,8 @@ conda create -n membrane_toy python=3.7.7 pip
 python -m pip install -r requirements.txt
 ```
 * To run:
+
+(in the directory ```model/toy_modelv1/```)
 ```
 python3 verification.py verify --input [input file] --test [test file] --metric [metric function (default:'cosine')] --threshold [threshold of metric function for verification (default:0.1)]
 ```
@@ -172,6 +176,8 @@ python -m pip install -r requirements.txt
 * Extract training data into `/wav_train_subset`
 * Move some subset of data of test users into `/wav_test_subset`
 * To run:
+
+(in the directory ```model/modelv2/```)
 ```
 python3 VBBA.py (optional argument)
 ```
@@ -199,7 +205,9 @@ python3 VBBA.py (optional argument)
 ### Tier 3 - Membrane
 **Command Line Model**
 
-```model/modelv2/```
+Modules in: ```model/modelv2/```
+
+Main Script: ```membrane.py```
 
 Speech-to-Text Identification and Voice-Based Biometric Authentication with Streaming Audio
 
@@ -219,7 +227,7 @@ python -m pip install -r requirements.txt
 <!-- * Extract training data into `/datasets/` -->
 * To run:
 
-
+(in the *root* directory)
 ```
 python3 membrane.py
 ```

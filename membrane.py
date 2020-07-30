@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import warnings
 warnings.filterwarnings('ignore')
-
 from argparse import ArgumentParser
-from utils import *
+import sys
+sys.path.append('./model/modelv2')
+# from utils import * ###imported by network
 from network import *
 from deepspeech import Model#, printVersions
 
@@ -28,16 +29,20 @@ def load_speaker_phrases(file = SPEAKER_PHRASES_FILE):
         speaker_phrases = pickle.load(fhand)
     return speaker_phrases
 
-def identify_user_by_phrase(data):
+def identify_user_by_phrase(data, verbose = True):
     """
     Identify the user by matching phrase to enrolled phrases.
 
     data: audio data as in array.
+    verbose: whether to print trascribed phrase.
     """
     phrase = get_text(data)
     speaker_phrases = load_speaker_phrases()
-    max_idx = np.argmax(list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
-    print('phrase scores:',list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values())))
+    text_scores = list(map(get_text_score, [phrase]*len(speaker_phrases), speaker_phrases.values()))
+    max_idx = np.argmax(text_scores)
+    if verbose:
+        print('transcribed phrase:', phrase)
+        print('phrase scores:',text_scores)
     matched_user = list(speaker_phrases)[max_idx]
     return matched_user
 
@@ -180,23 +185,25 @@ def enroll_new_user(username:str, file = ''):
     store_user_embedding(username, emb)
     store_user_phrase(username, phrase)
 
-def verify_user( file = ''):
+def verify_user( file = '', verbose = True):
     """
     Verify user's voice.
 
     file: path to a user's audio file to be used for the verification.
         users can use their existing file by passing a path to the file. Otherwise recording function will be invoked.
+    verbose: whether to print scores.
     """
     if file:
         emb,  denoised_data = get_emb(file = file)
     else:
         emb,  denoised_data = get_emb()#fpath
     speaker_models = load_speaker_models()
-    username = identify_user_by_phrase(denoised_data)
+    username = identify_user_by_phrase(denoised_data, verbose)
     c_score = cosine_similarity(emb, speaker_models[username])
     E_dist = euclidean_distances(emb, speaker_models[username])
-    print('cosine distance: ',c_score)
-    print('Euclidean distance: ',E_dist)
+    if verbose:
+        print('cosine distance: ',c_score)
+        print('Euclidean distance: ',E_dist)
     return (c_score > C_THRESHOLD)and(E_dist < E_THRESHOLD) , denoised_data, username  #, fpath
 
 def identify_user(file = ''):
@@ -280,7 +287,7 @@ def do_verify( file = ''):
     file: path to an audio file if a user wants to use an existing file.
     """
     print()
-    verified,  denoised_data, username = verify_user( file = file)
+    verified,  denoised_data, username = verify_user( file = file, verbose = True)
     if verified:
         print("User verified: ", username)
     else:
