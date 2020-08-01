@@ -2,7 +2,14 @@
 Rapid Voice-Based Biometric Authentication Project with OMIC.ai.
 
 
-We have a web-based biomedical/AI platform used for open-source COVID-19 research. Users currently log in via magic link, but we would like to add an option where the person is identified via voice through the browser. Ideally we would generate a phrase for the user to speak into a laptop/PC microphone, at which time the user would be rapidly authenticated and would be granted access.
+OMIC.ai has a web-based biomedical/AI platform used for open-source COVID-19 research. Users currently log in via magic link, but the company would like to add an option where the person is identified via voice through the browser. Ideally the company would generate a phrase for the user to speak into a laptop/PC microphone, at which time the user would be rapidly authenticated and would be granted access.
+
+Background noise has been one of the main challenges of a voice authentication system. Implementing denoising engineering and trained by synthetic data generated using both background noise augmentation and denoising, Membrane 2.0 is much more robust to ambient sounds than current models.
+
+i.e. Recall improvement for a test dataset with loud background noise (Signal to Noise Ratio ~ N(mean = 5, std = 2.5)):
+![Slide of recall improvement](static/recall_improvement.png)
+
+Slides for the project can be found here: [Project Slides](https://docs.google.com/presentation/d/1j1Io5efNoenrFZ3IZkUkpn7-dhc8rUHrsgvK0DX3ggs/edit#slide=id.g8d118e461b_0_88)
 
 **Contributor**: [Jun Seok Lee](lee.junseok39@gmail.com).
 
