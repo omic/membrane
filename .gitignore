@@ -23,6 +23,7 @@ src/
 ./data/
 tests/
 res/
+ec2/
 
 # **/modelv2/recorder.py
 **/setup**

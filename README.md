@@ -11,7 +11,7 @@ i.e. Recall improvement for a test dataset with loud background noise (Signal to
 
 Slides for the project can be found here: [Project Slides](https://docs.google.com/presentation/d/1j1Io5efNoenrFZ3IZkUkpn7-dhc8rUHrsgvK0DX3ggs/edit#slide=id.g8d118e461b_0_88)
 
-**Contributor**: [Jun Seok Lee](lee.junseok39@gmail.com).
+**Contributor**: [Jun Seok Lee](lee.junseok39@gmail.com) (lee.junseok39@gmail.com).
 
 ***jun* branch is the default public branch. *master* will not be updated until the project becomes public**
 
@@ -307,3 +307,7 @@ libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 libav-tools alsa-ut
 ---------------------------------------
 ## Acknowledge
 I thank Alok Deshpande for reviewing codes and useful suggestions.
+
+---------------------------------------
+## Contact
+For questions or comments, feel free to reach out to lee.junseok39@gmail.com. Thank you!
