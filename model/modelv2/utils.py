@@ -70,12 +70,14 @@ TEST_CLIPS_PER_USER = None #(None means max - clips all audio files)
 import pyaudio
 CHUNK = 1024 #1024
 FORMAT = pyaudio.paInt16
-try:
-    CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels']
-    #2
-except:
-    print("No sound channel configured. Set CHANNEL = 1")
-    CHANNELS = 1
+# the Voice-to-Text model works best with mono channel
+# try:
+#     CHANNELS = pyaudio.PyAudio().get_default_input_device_info()['maxInputChannels']
+#     #2
+# except:
+#     print("No sound channel configured. Set CHANNEL = 1")
+#     CHANNELS = 1
+CHANNELS = 1
 RATE = 16000 # 44100
 EXTRA_SECONDS = 1.0
 RECORD_SECONDS = NUM_NEW_CLIPS * MIN_CLIP_DURATION + EXTRA_SECONDS
