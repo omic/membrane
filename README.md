@@ -1,6 +1,17 @@
-# Membrane 2.0
-Rapid Voice-Based Biometric Authentication Project with OMIC.ai.
+# membrane
 
+Rapid Voice-Based Biometric Authentication.
+
+**Lead**: [@lee-junseok](https://github.com/lee-junseok).
+
+## TODO
+
+- Describe **benchmarks and metrics** with state-of-the-art.
+- Tie benchmarks into **future work** and how metrics can be improved.
+- Collect and/or source an **open-source benchmarking dataset** (for noisy voice identification).
+- Capture video of Membrane in action and pretty-up the repo with better structure and a project icon/logo.
+
+<hr />
 
 OMIC.ai has a web-based biomedical/AI platform used for open-source COVID-19 research. Users currently log in via magic link, but the company would like to add an option where the person is identified via voice through the browser. Ideally the company would generate a phrase for the user to speak into a laptop/PC microphone, at which time the user would be rapidly authenticated and would be granted access.
 
